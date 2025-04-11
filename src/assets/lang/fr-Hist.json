@@ -11,7 +11,7 @@
   "date": "Date",
   "actions": "Actions",
   "confirmDelRequest": "Voulez-vous vraiment supprimer cette requête ?",
-  "confirmClearHistory": "Voulez-vous vraiment effacer l'historique ?",
+  "confirmClearHistory": "Voulez-vous vraiment effacer l'historique ? (les requêtes favorites seront conservées)",
   "search": "Recherche : ",
   "entriesPerPage": "Afficher _MENU_ entrées par page",
   "showingEntries": "Affichage de _START_ à _END_ sur _TOTAL_ entrées",

@@ -10,7 +10,7 @@
   "summary": "Summary",
   "date": "Date",
   "actions": "Actions",
-  "confirmClearHistory": "Are you sure you want to clear the history?",
+  "confirmClearHistory": "Are you sure you want to clear the history? (starred queries will be kept)",
   "confirmDelRequest": "Do you really want to delete this request?",
   "search": "Search:",
   "entriesPerPage": "Show _MENU_ entries per page",

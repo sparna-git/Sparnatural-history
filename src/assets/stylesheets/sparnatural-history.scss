@@ -1,0 +1,15 @@
+@use "./components/all-components-sparnatural-history.scss";
+
+// Import d'un thème CSS classique (pas SCSS, reste en @import)
+@import "sparnatural/src/assets/stylesheets/themes/sparnatural-theme-grass.css";
+
+sparnatural-history {
+  position: relative;
+
+  .historySection {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+  }
+}

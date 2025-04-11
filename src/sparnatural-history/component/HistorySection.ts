@@ -121,10 +121,10 @@ class HistorySection extends HTMLComponent {
 
       // parameters for the DataTable
       destroy: true,
-      pageLength: 4,
+      pageLength: 10,
       lengthMenu: [
-        [4, 10, 25, 50, -1],
-        [4, 10, 25, 50, "All"],
+        [10, 25, 50, -1],
+        [10, 25, 50, "All"],
       ],
       scrollY: "400px",
       scrollCollapse: true,

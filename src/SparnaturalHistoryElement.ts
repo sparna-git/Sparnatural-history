@@ -4,7 +4,7 @@ import { ISparJson } from "sparnatural/src/sparnatural/generators/json/ISparJson
 // import QueryLoader from "./sparnatural/querypreloading/QueryLoader";
 // import SparnaturalComponent from "./sparnatural/components/SparnaturalComponent";
 import { SparnaturalHistoryAttributes } from "./SparnaturalHistoryAttributes";
-import { mergeSettings } from "./sparnatural-history/settings/defaultSettings";
+import { getSettings, mergeSettings } from "./sparnatural-history/settings/defaultSettings";
 import LocalDataStorage from "./sparnatural-history/storage/LocalDataStorage";
 
 export class SparnaturalHistoryElement extends HTMLElement {
@@ -39,6 +39,36 @@ export class SparnaturalHistoryElement extends HTMLElement {
     mergeSettings(this._attributes);
     this.sparnaturalHistory.render();
   }
+
+  static get observedAttributes() {
+    return ["lang"];
+  }
+  attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    newValue: string | null
+  ) {
+    if (oldValue === newValue) {
+      return;
+    }
+
+    // prevents callback to be called on initial creation
+    if (oldValue != null) {
+      switch (name) {
+        case "lang": {
+          getSettings().language = newValue;
+          break;
+        }
+        default: {
+          throw new Error("unknown observed attribute ${name}");
+        }
+      }
+
+      // then display/reprint
+      this.display();
+    }
+  }
+
 
   triggerLoadQueryEvent(query: ISparJson) {
     // Dispatch LOAD_QUERY event

@@ -25,7 +25,6 @@
   "MessageExport": "Requête copiée dans le presse-papiers !",
   "copyQuery": "Copier la requête (JSON).",
   "apply": "Appliquer",
-  "cancel": "Annuler",
   "from": "De",
   "to": "À",
   "dateFilterTitle": "Filtre de date"

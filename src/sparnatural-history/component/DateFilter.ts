@@ -24,7 +24,7 @@ class DateFilterModal {
               ${SparnaturalHistoryI18n.labels["clear"] || "Clear"}
             </button>
             <button id="cancelDateFilter" class="btn-delete">
-              ${SparnaturalHistoryI18n.labels["cancel"] || "Annuler"}
+              ${SparnaturalHistoryI18n.labels["close"] || "Fermer"}
             </button>
           </div>
         </div>

@@ -56,6 +56,11 @@ class LocalDataStorage {
       });
     }
 
+    // Trier par date décroissante
+    history.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
     this.set("queryHistory", history);
     console.log("Après ajout :", this.getHistory());
   }

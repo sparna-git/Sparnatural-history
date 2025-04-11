@@ -25,7 +25,6 @@
   "MessageExport": "Query copied to clipboard!",
   "copyQuery": "Copy query (JSON).",
   "apply": "Apply",
-  "cancel": "Cancel",
   "from": "From",
   "to": "To",
   "dateFilterTitle": "Date filter"

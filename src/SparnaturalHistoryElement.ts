@@ -4,13 +4,19 @@ import { ISparJson } from "sparnatural/src/sparnatural/generators/json/ISparJson
 // import QueryLoader from "./sparnatural/querypreloading/QueryLoader";
 // import SparnaturalComponent from "./sparnatural/components/SparnaturalComponent";
 import { SparnaturalHistoryAttributes } from "./SparnaturalHistoryAttributes";
-import { getSettings, mergeSettings } from "./sparnatural-history/settings/defaultSettings";
+import {
+  getSettings,
+  mergeSettings,
+} from "./sparnatural-history/settings/defaultSettings";
 import LocalDataStorage from "./sparnatural-history/storage/LocalDataStorage";
+import "datatables.net-bs4/css/dataTables.bootstrap4.min.css";
 
 export class SparnaturalHistoryElement extends HTMLElement {
   static HTML_ELEMENT_NAME = "sparnatural-history";
   static EVENT_INIT = "init";
   static EVENT_LOAD_QUERY = "loadQuery";
+
+  private config: any = null;
 
   // just to avoid name clash with "attributes"
   _attributes: SparnaturalHistoryAttributes;
@@ -69,6 +75,13 @@ export class SparnaturalHistoryElement extends HTMLElement {
     }
   }
 
+  notifyConfiguration(config: any): void {
+    // Tu peux stocker la config pour l’utiliser plus tard
+    this.config = config;
+
+    // Ou déclencher une action immédiate si besoin (ex : affichage conditionnel)
+    console.log("Configuration reçue dans l’historique :", config);
+  }
 
   triggerLoadQueryEvent(query: ISparJson) {
     // Dispatch LOAD_QUERY event

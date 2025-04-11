@@ -6,7 +6,9 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const DashboardPlugin = require("webpack-dashboard/plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const FileManagerPlugin = require("filemanager-webpack-plugin");
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+const BundleAnalyzerPlugin =
+  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 module.exports = {
   entry: {
@@ -29,9 +31,9 @@ module.exports = {
         use: {
           loader: "ts-loader",
           options: {
-            allowTsInNodeModules: true
+            allowTsInNodeModules: true,
           },
-        }
+        },
       },
       {
         test: /\.(sass|scss)$/,
@@ -80,7 +82,7 @@ module.exports = {
   resolve: {
     fallback: {
       util: require.resolve("util/"),
-      buffer: require.resolve("buffer/")
+      buffer: require.resolve("buffer/"),
     },
     extensions: [".tsx", ".ts", ".js"],
   },
@@ -112,7 +114,7 @@ module.exports = {
           globOptions: {
             ignore: ["**/index.html"], // Assure-toi de ne pas copier ces fichiers déjà générés
           },
-        }
+        },
       ],
     }),
 
@@ -120,7 +122,7 @@ module.exports = {
     new webpack.ProvidePlugin({
       $: "jquery",
       jQuery: "jquery",
-    })
+    }),
   ],
   devServer: {
     static: {

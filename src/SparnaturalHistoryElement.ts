@@ -76,11 +76,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
   }
 
   notifyConfiguration(config: any): void {
-    // Tu peux stocker la config pour l’utiliser plus tard
     this.config = config;
-
-    // Ou déclencher une action immédiate si besoin (ex : affichage conditionnel)
-    console.log("Configuration reçue dans l’historique :", config);
   }
 
   triggerLoadQueryEvent(query: ISparJson) {

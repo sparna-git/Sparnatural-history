@@ -12,8 +12,6 @@ console.log("urlParams", urlParams);
 const lang = urlParams.get("lang");
 console.log("Configuration ", sparnatural.configuration);
 
-
-
 console.log("init yasr & yasqe...");
 const yasqe = new Yasqe(document.getElementById("yasqe"), {
   requestConfig: { endpoint: $("#endpoint").text() },
@@ -37,7 +35,6 @@ const yasr = new Yasr(document.getElementById("yasr"), {
   // avoid persistency side-effects
   persistency: { prefix: false, results: { key: false } },
 });
-
 
 sparnatural.addEventListener("init", (event) => {
   console.log("init sparnatural...");

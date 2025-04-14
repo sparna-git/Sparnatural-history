@@ -96,11 +96,30 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                         startLogic = "<span class='logic Where'>Where</span>";
                     }
                 }
+                let selectedValues = "";
+                let labelSelectedValues = "value";
+                if (branch.line.values.length > 0) {
+                    branch.line.values.forEach((selectedValue: any) => {
+                        selectedValues += `<span class="selectedValue">${selectedValue.label}</span>`;
+                    });
+                    if (branch.line.values.length > 1) {
+                        labelSelectedValues = "values";
+                    }
+
+                } else {
+                    if (branch.children.length == 0) {
+                        selectedValues += `<span class="selectedValue">Any</span>`;
+                    }
+                }
+                if(selectedValues != "") {
+                    selectedValues = `<div class='selectedValues'>With ${labelSelectedValues} : ${selectedValues}</div>`;
+                }
+
                 let htmlLI ="" ;
                 if ((isRoot) && (nbChildren == 1)) {
-                    htmlLI = `<li><div class="line">${startLogic}${startOption}<strong>${startLabel}${sSelceted}</strong> ${propLabel} <strong>${endLabel}${oSelceted}</strong></div>`;
+                    htmlLI = `<li><div class="line">${startLogic}${startOption}<strong>${startLabel}${sSelceted}</strong> ${propLabel} <strong>${endLabel}${oSelceted}</strong>${selectedValues}</div>`;
                 } else {
-                    htmlLI = `<li><div class="line">${startLogic}${startOption} ${propLabel} <strong>${endLabel}${oSelceted}</strong></div>`;
+                    htmlLI = `<li><div class="line">${startLogic}${startOption} ${propLabel} <strong>${endLabel}${oSelceted}</strong>${selectedValues}</div>`;
                 }
                 htmlLI += this.formatChildsItems(branch.children, variables, false)+'</li>' ;
                 htmlUL += htmlLI;

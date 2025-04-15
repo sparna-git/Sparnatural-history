@@ -16,6 +16,8 @@ import { SparnaturalHistoryI18n } from "../settings/SparnaturalHistoryI18n"; //
 import { getSettings } from "../settings/defaultSettings";
 import DateFilterModal from "./DateFilter";
 
+import { SparnaturalQuerySummaryComponent } from "../../sparnatural-query-summary/SparnaturalQuerySummaryComponent";
+
 class HistorySection extends HTMLComponent {
   specProvider: ISparnaturalSpecification;
   private confirmationModal: ConfirmationModal;
@@ -465,7 +467,9 @@ class HistorySection extends HTMLComponent {
     queryJson: ISparJson,
     specProvider?: ISparnaturalSpecification
   ): string {
-    let summary = `<div class="query-summary">`;
+
+    let newSummary = new SparnaturalQuerySummaryComponent(specProvider,  queryJson, getSettings().language );
+    /*let summary = `<div class="query-summary">`;*/
 
     setTimeout(() => {
       document.querySelectorAll(".query-summary").forEach((element) => {
@@ -475,7 +479,7 @@ class HistorySection extends HTMLComponent {
         }
       });
     }, 100);
-
+/*
     const extractLastSegment = (uri: string): string =>
       uri ? uri.substring(uri.lastIndexOf("/") + 1) : "Inconnu";
 
@@ -521,8 +525,8 @@ class HistorySection extends HTMLComponent {
       summary += processBranch(branch);
     });
 
-    summary += `</div>`;
-    return summary;
+    summary += `</div>`;*/
+    return newSummary.newQuerySummary;
   }
 
   // get l entity du predicat en utilisant getLabel dans ISpecificationEntry

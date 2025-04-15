@@ -2,7 +2,12 @@ import "datatables.net";
 import $ from "jquery";
 import LocalDataStorage from "../storage/LocalDataStorage";
 import HTMLComponent from "sparnatural/src/sparnatural/components/HtmlComponent";
-import { Branch, ISparJson, VariableExpression, VariableTerm } from "sparnatural/src/sparnatural/generators/json/ISparJson";
+import {
+  Branch,
+  ISparJson,
+  VariableExpression,
+  VariableTerm,
+} from "sparnatural/src/sparnatural/generators/json/ISparJson";
 import ISparnaturalSpecification from "sparnatural/src/sparnatural/spec-providers/ISparnaturalSpecification";
 import ConfirmationModal from "./ConfirmationModal";
 import { QueryHistory } from "./QueryHistory";
@@ -150,9 +155,9 @@ class HistorySection extends HTMLComponent {
       columnDefs: [
         { targets: 0, orderable: true, type: "custom-fav", width: "3%" },
         { targets: 1, width: "8%" },
-        { targets: 2, orderable: false, width: "40%" },
-        { targets: 3, width: "17%" },
-        { targets: 4, orderable: false, width: "32%" },
+        { targets: 2, orderable: false, width: "50%" },
+        { targets: 3, width: "8%" },
+        { targets: 4, orderable: false, width: "31%" },
       ],
 
       data: history
@@ -171,9 +176,29 @@ class HistorySection extends HTMLComponent {
           const entity = this.getEntityLabel(entityStype);
 
           const dateHist = new Date(entry.date);
-          const dateDisplay = dateHist.toLocaleString(
-            getSettings().language === "fr" ? "fr-FR" : "en-US"
-          );
+          const now = new Date();
+          const isToday =
+            dateHist.getDate() === now.getDate() &&
+            dateHist.getMonth() === now.getMonth() &&
+            dateHist.getFullYear() === now.getFullYear();
+
+          let dateDisplay: string;
+          const lang = getSettings().language === "fr" ? "fr-FR" : "en-US";
+
+          if (isToday) {
+            // afficher seulement l'heure (ex: 14:32)
+            dateDisplay = dateHist.toLocaleTimeString(lang, {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          } else {
+            // afficher jour/mois/année (ex: 15/04/2025 ou 04/15/2025 selon la langue)
+            dateDisplay = dateHist.toLocaleDateString(lang, {
+              day: "2-digit",
+              month: "2-digit",
+            });
+          }
+
           const dateISO = dateHist.toISOString();
           // returner une ligne de tableau avec les données formatées
           return [
@@ -533,7 +558,10 @@ class HistorySection extends HTMLComponent {
   ): string | null {
     if ("value" in variable) {
       return variable.value; // Cas d'un VariableTerm
-    } else if ("expression" in variable && "value" in variable.expression.expression) {
+    } else if (
+      "expression" in variable &&
+      "value" in variable.expression.expression
+    ) {
       return variable.expression.expression.value; // Cas d'un VariableExpression
     }
     return null;

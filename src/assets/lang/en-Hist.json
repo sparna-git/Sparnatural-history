@@ -27,5 +27,6 @@
   "apply": "Apply",
   "from": "From",
   "to": "To",
-  "dateFilterTitle": "Date filter"
+  "dateFilterTitle": "Date filter",
+  "clear": "Clear"
 }

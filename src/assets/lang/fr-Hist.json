@@ -27,5 +27,6 @@
   "apply": "Appliquer",
   "from": "De",
   "to": "À",
-  "dateFilterTitle": "Filtre de date"
+  "dateFilterTitle": "Filtre de date",
+  "clear": "Effacer"
 }

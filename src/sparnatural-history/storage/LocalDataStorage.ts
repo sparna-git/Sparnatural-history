@@ -42,8 +42,8 @@ class LocalDataStorage {
     let history = this.getHistory();
     console.log("Avant ajout :", history);
 
-    // Vérifier si la requête existe déjà
-    let existingQuery = history.find(
+    // Vérifie si la requête existe déjà
+    const existingQuery = history.find(
       (q) => JSON.stringify(q.queryJson) === JSON.stringify(queryJson)
     );
 
@@ -52,14 +52,29 @@ class LocalDataStorage {
         id: crypto.randomUUID(),
         queryJson,
         date: new Date().toISOString(),
-        isFavorite: false, // Ajoute `isFavorite: false` par défaut
+        isFavorite: false,
       });
     }
 
-    // Trier par date décroissante
+    // Trie par date (plus récente en haut)
     history.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
+
+    // Si on dépasse 200, on supprime les plus anciennes non-favorites
+    while (history.length > 200) {
+      const oldestNonFavoriteIndex = history
+        .map((entry, index) => ({ ...entry, index }))
+        .reverse() // du plus ancien au plus récent
+        .find((entry) => !entry.isFavorite)?.index;
+
+      if (oldestNonFavoriteIndex !== undefined) {
+        history.splice(oldestNonFavoriteIndex, 1);
+      } else {
+        // Si tous sont favoris, on ne supprime rien
+        break;
+      }
+    }
 
     this.set("queryHistory", history);
     console.log("Après ajout :", this.getHistory());

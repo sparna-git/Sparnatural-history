@@ -1,8 +1,5 @@
-/*
-  This file shows how to integrate SparNatural into your website. 
-*/
-
 const sparnatural = document.querySelector("spar-natural");
+const sparnaturalHistory = document.querySelector("sparnatural-history");
 
 let lastquery = null;
 
@@ -11,8 +8,6 @@ const urlParams = new URLSearchParams(queryString);
 console.log("urlParams", urlParams);
 const lang = urlParams.get("lang");
 console.log("Configuration ", sparnatural.configuration);
-
-
 
 console.log("init yasr & yasqe...");
 const yasqe = new Yasqe(document.getElementById("yasqe"), {
@@ -39,47 +34,25 @@ const yasr = new Yasr(document.getElementById("yasr"), {
 });
 
 
+
 sparnatural.addEventListener("init", (event) => {
-  console.log("init sparnatural...");
-  sparnatural.configuration = {
-    headers: { "User-Agent": "This is Sparnatural calling" },
-    autocomplete: {
-      maxItems: 40,
-    },
-  };
-  console.log("Configuration ", sparnatural.configuration);
-  // Inject history (specProvider is optional)
 
-  setTimeout(() => {
-    const historyElement = document.querySelector("sparnatural-history");
-    const spec = sparnatural?.sparnatural?.specProvider;
-
-    if (spec && historyElement?.sparnaturalHistory?.setSpecProvider) {
-      historyElement.sparnaturalHistory.setSpecProvider(spec);
-      console.log("specProvider injected into sparnatural-history");
-    } else {
-      console.warn(
-        "specProvider not provided — sparnatural-history will use default rendering."
-      );
-    }
-  }, 30);
+  // Inject sparnatural configuration in history
+  sparnaturalHistory.notifyConfiguration(event.detail.config);
 
   // Notify all plugins of configuration updates if they support it
   for (const plugin in yasr.plugins) {
     if (yasr.plugins[plugin].notifyConfiguration) {
       console.log("notifying configuration for plugin " + plugin);
       yasr.plugins[plugin].notifyConfiguration(
-        sparnatural.sparnatural.specProvider
+        event.detail.config
       );
-      console.log("sparnatural", sparnatural.sparnatural.specProvider);
     }
   }
 });
 
-const historyComponent = document.querySelector("sparnatural-history");
-
 document.getElementById("myCustomButton").addEventListener("click", () => {
-  historyComponent.openHistoryModal();
+  sparnaturalHistory.openHistoryModal();
 });
 
 sparnatural.addEventListener("queryUpdated", (event) => {
@@ -139,22 +112,18 @@ sparnatural.addEventListener("queryUpdated", (event) => {
   }
 });
 
-const historyElement = document.querySelector("sparnatural-history");
-
 sparnatural.addEventListener("submit", (event) => {
   sparnatural.disablePlayBtn();
 
-  if (historyElement && typeof historyElement.saveQuery === "function") {
-    historyElement.saveQuery(lastquery);
-  } else {
-    console.warn("Impossible d'appeler saveQuery sur sparnatural-history.");
-  }
+  // store query in history
+  sparnaturalHistory.saveQuery(lastquery);
 
   // Exécuter la requête via YASQE
   yasqe.query();
 });
 
-historyElement.addEventListener("loadQuery", (event) => {
+// load query from history
+sparnaturalHistory.addEventListener("loadQuery", (event) => {
   const query = event.detail.query;
   sparnatural.loadQuery(query);
 });

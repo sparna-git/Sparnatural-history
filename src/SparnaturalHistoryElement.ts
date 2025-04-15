@@ -16,8 +16,6 @@ export class SparnaturalHistoryElement extends HTMLElement {
   static EVENT_INIT = "init";
   static EVENT_LOAD_QUERY = "loadQuery";
 
-  private config: any = null;
-
   // just to avoid name clash with "attributes"
   _attributes: SparnaturalHistoryAttributes;
 
@@ -76,7 +74,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
   }
 
   notifyConfiguration(config: any): void {
-    this.config = config;
+    this.sparnaturalHistory.setSpecProvider(config);
   }
 
   triggerLoadQueryEvent(query: ISparJson) {

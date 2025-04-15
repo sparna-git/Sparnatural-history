@@ -12,7 +12,7 @@
   "actions": "Actions",
   "confirmDelRequest": "Voulez-vous vraiment supprimer cette requête ?",
   "confirmClearHistory": "Voulez-vous vraiment effacer l'historique ? (les requêtes favorites seront conservées)",
-  "search": "Recherche : ",
+  "search": "Rechercher dans le résumé",
   "entriesPerPage": "Afficher _MENU_ entrées par page",
   "showingEntries": "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
   "infoEmpty": "Aucune entrée trouvée",

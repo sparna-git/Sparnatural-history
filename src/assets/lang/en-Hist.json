@@ -12,7 +12,7 @@
   "actions": "Actions",
   "confirmClearHistory": "Are you sure you want to clear the history? (starred queries will be kept)",
   "confirmDelRequest": "Do you really want to delete this request?",
-  "search": "Search:",
+  "search": "Search in summary",
   "entriesPerPage": "Show _MENU_ entries per page",
   "showingEntries": "Showing _START_ to _END_ of _TOTAL_ entries",
   "infoEmpty": "No entries found",

@@ -17,33 +17,6 @@
       display: flex;
       align-items: center;
       gap: 30px;
-
-      .dt-search {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-
-        .dt-input {
-          padding: 4px 6px;
-          font-size: 16px;
-          color: #333;
-          background-color: #f1f1f1;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-          transition: border-color 0.3s, box-shadow 0.3s;
-
-          &::placeholder {
-            color: #999;
-          }
-
-          &:focus {
-            border-color: rgb(218, 141, 0);
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-            outline: none;
-          }
-        }
-      }
     }
 
     &.dt-layout-middle {
@@ -87,4 +60,31 @@
 // Ordre spécifique pour la longueur
 .dt-length {
   order: 0;
+}
+.dt-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .dt-input {
+    padding: 4px 6px;
+    font-size: 16px;
+    color: #333;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 230px !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s, box-shadow 0.3s;
+
+    &::placeholder {
+      color: #999;
+    }
+
+    &:focus {
+      border-color: rgb(218, 141, 0);
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+      outline: none;
+    }
+  }
 }

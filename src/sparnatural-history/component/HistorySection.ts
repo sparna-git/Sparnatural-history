@@ -141,7 +141,8 @@ class HistorySection extends HTMLComponent {
       info: true,
       pagingType: "simple_numbers",
       language: {
-        search: SparnaturalHistoryI18n.labels.search,
+        search: "",
+        searchPlaceholder: SparnaturalHistoryI18n.labels.search,
         lengthMenu: SparnaturalHistoryI18n.labels.entriesPerPage,
         info: SparnaturalHistoryI18n.labels.showingEntries,
         infoEmpty: SparnaturalHistoryI18n.labels.infoEmpty,
@@ -467,8 +468,11 @@ class HistorySection extends HTMLComponent {
     queryJson: ISparJson,
     specProvider?: ISparnaturalSpecification
   ): string {
-
-    let newSummary = new SparnaturalQuerySummaryComponent(specProvider,  queryJson, getSettings().language );
+    let newSummary = new SparnaturalQuerySummaryComponent(
+      specProvider,
+      queryJson,
+      getSettings().language
+    );
     /*let summary = `<div class="query-summary">`;*/
 
     setTimeout(() => {
@@ -479,7 +483,7 @@ class HistorySection extends HTMLComponent {
         }
       });
     }, 100);
-/*
+    /*
     const extractLastSegment = (uri: string): string =>
       uri ? uri.substring(uri.lastIndexOf("/") + 1) : "Inconnu";
 

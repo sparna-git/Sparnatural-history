@@ -468,8 +468,7 @@ class HistorySection extends HTMLComponent {
     specProvider?: ISparnaturalSpecification
   ): string {
 
-    let newSummary = new SparnaturalQuerySummaryComponent(specProvider,  queryJson, getSettings().language );
-    /*let summary = `<div class="query-summary">`;*/
+    let summary = new SparnaturalQuerySummaryComponent(specProvider,  queryJson, getSettings().language );
 
     setTimeout(() => {
       document.querySelectorAll(".query-summary").forEach((element) => {
@@ -479,54 +478,8 @@ class HistorySection extends HTMLComponent {
         }
       });
     }, 100);
-/*
-    const extractLastSegment = (uri: string): string =>
-      uri ? uri.substring(uri.lastIndexOf("/") + 1) : "Inconnu";
 
-    const processBranch = (branch: Branch, depth = 0): string => {
-      let result = "";
-      const indentation = "&nbsp;".repeat(depth * 4);
-
-      const startLabel =
-        branch.line.sType &&
-        (specProvider?.getEntity(branch.line.sType)?.getLabel() ||
-          extractLastSegment(branch.line.sType));
-      const propLabel =
-        branch.line.p &&
-        (specProvider?.getProperty(branch.line.p)?.getLabel() ||
-          extractLastSegment(branch.line.p));
-
-      const endLabel =
-        branch.line.oType &&
-        (specProvider?.getEntity(branch.line.oType)?.getLabel() ||
-          extractLastSegment(branch.line.oType));
-
-      let line = `${indentation}<strong>${startLabel}</strong> → ${propLabel} → <strong>${endLabel}</strong>`;
-
-      if (branch.line.values.length > 0) {
-        line += ` = ${branch.line.values.join(", ")}`;
-      }
-
-      result += line;
-
-      if (branch.children && branch.children.length > 0) {
-        result += `<br>${indentation}<strong>WHERE</strong> `;
-        branch.children.forEach((child, index) => {
-          if (index > 0) result += `<br>${indentation}<strong>AND</strong> `;
-          result += processBranch(child, depth + 1);
-        });
-      }
-
-      return result;
-    };
-
-    queryJson.branches.forEach((branch, index) => {
-      if (index > 0) summary += `<br><strong>AND</strong> `;
-      summary += processBranch(branch);
-    });
-
-    summary += `</div>`;*/
-    return newSummary.newQuerySummary;
+    return summary.querySummary;
   }
 
   // get l entity du predicat en utilisant getLabel dans ISpecificationEntry

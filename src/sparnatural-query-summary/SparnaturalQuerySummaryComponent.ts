@@ -14,8 +14,6 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
     language: string;
     querySummary: string;
 
-    newQuerySummary: string;
-
     static ICON_EYE = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
   
     constructor( specProvider: ISparnaturalSpecification, queryJson: ISparJson, language: string) {
@@ -23,18 +21,12 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
       this.specProvider = specProvider;
       this.queryJson = queryJson;
       this.language = language;
-      console.log("SparnaturalQuerySummaryComponent constructed");
       this.render();
     }
 
     render(): this {
         this.#initLang();
-        console.log(this.queryJson) ;
-        console.log("Rendering SparnaturalQuerySummaryComponent...");
-
         this.querySummary = this.formatQuerySummary(this.queryJson, this.specProvider);
-
-        console.log(this.newQuerySummary);
 
         return this;
     }
@@ -79,40 +71,42 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                     this.extractLastSegment(branch.line.oType));
                 let startOption = "" ;  
                 if (branch?.optional === true) {
-                    startOption += "<span class='startOtion optional'>Optional</span>";
+                    startOption += `<span class='startOtion optional'>${SparnaturalQuerySummaryI18n.labels.optionnal}</span>`;
                 }
                 if (branch?.notExist === true) {
-                    startOption += "<span class='startOtion notExist'>Not exist</span>";
+                    startOption += `<span class='startOtion notExist'>${SparnaturalQuerySummaryI18n.labels.notexist}</span>`;
                 }
 
                 if (nbChildren > 1) {
-                    if (isRoot) {
-                        startLogic = "<span class='logic And'>AND</span>";
-                    } else {
-                        startLogic = "<span class='logic And'>And</span>";
-                    }
+                      startLogic = `<span class='logic And'>${SparnaturalQuerySummaryI18n.labels.and}</span>`;
+                    
                 } else {
                     if (!isRoot) {
-                        startLogic = "<span class='logic Where'>Where</span>";
+                        startLogic = `<span class='logic Where'>${SparnaturalQuerySummaryI18n.labels.where}</span>`;
                     }
                 }
                 let selectedValues = "";
-                let labelSelectedValues = "value";
+                let labelSelectedValues = "";
                 if (branch.line.values.length > 0) {
+                    let nbValue = 0;
                     branch.line.values.forEach((selectedValue: any) => {
+                        if (nbValue > 0) {
+                            selectedValues += ", ";
+                        }
                         selectedValues += `<span class="selectedValue">${selectedValue.label}</span>`;
+                        nbValue++;
                     });
                     if (branch.line.values.length > 1) {
-                        labelSelectedValues = "values";
+                        labelSelectedValues =  `${SparnaturalQuerySummaryI18n.labels.values} : ` ;
                     }
 
                 } else {
                     if (branch.children.length == 0) {
-                        selectedValues += `<span class="selectedValue">Any</span>`;
+                        selectedValues += `<span class="selectedValue">${SparnaturalQuerySummaryI18n.labels.any}</span>`;
                     }
                 }
                 if(selectedValues != "") {
-                    selectedValues = `<div class='selectedValues'>With ${labelSelectedValues} : ${selectedValues}</div>`;
+                    selectedValues = `<div class='selectedValues'>${labelSelectedValues}${selectedValues}</div>`;
                 }
 
                 let htmlLI ="" ;
@@ -134,86 +128,15 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
         queryJson: ISparJson,
         specProvider?: ISparnaturalSpecification
       ): string {
-        let summary = `<div class="query-summary">`;
+        let summary = ``;
     
-        setTimeout(() => {
-          document.querySelectorAll(".query-summary").forEach((element) => {
-            const div = element as HTMLDivElement;
-            if (div.scrollHeight > div.clientHeight) {
-              div.classList.add("scrollable");
-            }
-          });
-        }, 100);
         let allVarible: any[] = queryJson.variables ;
         const reformattedArray = allVarible.map(({ termType, value }) => ( value ));
-        console.log(reformattedArray) ;
 
-        this.newQuerySummary = '<div class="SparnturalQuerySummaryComponent query-summary SparnaturalTheme">'+this.formatChildsItems(queryJson.branches, reformattedArray)+'</div>';
+        summary = '<div class="SparnturalQuerySummaryComponent query-summary SparnaturalTheme">'+this.formatChildsItems(queryJson.branches, reformattedArray)+'</div>';
     
-        const extractLastSegment = (uri: string): string =>
-          uri ? uri.substring(uri.lastIndexOf("/") + 1) : "Inconnu";
-    
-        /*const processBranch = (branch: Branch, depth = 0): string => {
-          let result = "";
-          const indentation = "&nbsp;".repeat(depth * 4);
-    
-          const startLabel =
-            branch.line.sType &&
-            (specProvider?.getEntity(branch.line.sType)?.getLabel() ||
-              extractLastSegment(branch.line.sType));
-          const propLabel =
-            branch.line.p &&
-            (specProvider?.getProperty(branch.line.p)?.getLabel() ||
-              extractLastSegment(branch.line.p));
-    
-          const endLabel =
-            branch.line.oType &&
-            (specProvider?.getEntity(branch.line.oType)?.getLabel() ||
-              extractLastSegment(branch.line.oType));
-    
-          let line = `${indentation}<strong>${startLabel}</strong> → ${propLabel} → <strong>${endLabel}</strong>`;
-    
-          if (branch.line.values.length > 0) {
-            line += ` = ${branch.line.values.join(", ")}`;
-          }
-    
-          result += line;
-    
-          if (branch.children && branch.children.length > 0) {
-            result += `<br>${indentation}<strong>WHERE</strong> `;
-            branch.children.forEach((child, index) => {
-              if (index > 0) result += `<br>${indentation}<strong>AND</strong> `;
-              result += processBranch(child, depth + 1);
-            });
-          }
-    
-          return result;
-        };*/
-    
-        /*queryJson.branches.forEach((branch, index) => {
-          if (index > 0) summary += `<br><strong>AND</strong> `;
-          summary += processBranch(branch);
-        });*/
-    
-        summary += `${ this.newQuerySummary}</div>`;
         return summary;
       }
-    
-      // get l entity du predicat en utilisant getLabel dans ISpecificationEntry
-    private getEntityLabel(entityURI: string): string {
-        // Récupérer le type de l'objet avec la méthode getProperty
-        //verifier si la specProvider est définie
-        if (!this.specProvider) {
-          console.error("specProvider is not defined.");
-          return this?.extractLastSegment(entityURI); // Retourne le dernier segment de l'URI
-        }
-        const object = this.specProvider.getEntity(entityURI);
-        if (object) {
-          return object.getLabel() || entityURI;
-        } else {
-          return entityURI;
-        }
-    }
 
       
     private extractLastSegment = (uri: string): string =>

@@ -1,3 +1,8 @@
 {
-    "optionnal": "Optionnal"
+    "and": "And",
+    "where": "Where",
+    "notexist": "Not exist",
+    "optionnal": "Optionnal",
+    "any": "Any",
+    "values": "With values"
 }

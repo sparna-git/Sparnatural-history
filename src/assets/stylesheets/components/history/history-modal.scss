@@ -9,14 +9,6 @@
     z-index: 999;
   }
 
-  // Fallback ou duplication spécifique ?
-  /**/
-  #queryHistoryTable {
-    thead {
-      display: none;
-    }
-  }
-
   .history-modal {
     position: fixed;
     top: 50%;
@@ -34,4 +26,12 @@
     overflow: hidden;
     max-height: 680px;
   }
+
+  // Fallback ou duplication spécifique ?
+  /*
+  #queryHistoryTable {
+    thead {
+      display: none;
+    }
+  }*/
 }

@@ -36,9 +36,8 @@
       box-sizing: border-box;
 
       .dt-scroll {
-        max-height: 400px;
-        overflow-y: auto;
-        overflow-x: auto;
+        max-height: unset;
+        overflow: hidden;
         max-width: 100%;
         box-sizing: border-box;
 

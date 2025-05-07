@@ -47,9 +47,12 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
             let nbChildren = 0 ;
             childrens.forEach((branch: any) => {
                 let startLogic = "" ;
+                let endLogic = "" ;
                 nbChildren++ ;  
                 let sSelceted = "" ;
                 let oSelceted = "" ;
+                let whereStartLabel = "" ;
+                console.log(branch) ;
                 if (variables.includes(branch.line.s)) {
                     sSelceted = SparnaturalQuerySummaryComponent.ICON_EYE ;
                 }
@@ -71,10 +74,10 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                     this.extractLastSegment(branch.line.oType));
                 let startOption = "" ;  
                 if (branch?.optional === true) {
-                    startOption += `<span class='startOtion optional'>${SparnaturalQuerySummaryI18n.labels.optionnal}</span>`;
+                    startOption += `<span class='startOption optional'>${SparnaturalQuerySummaryI18n.labels.optionnal}</span> `;
                 }
-                if (branch?.notExist === true) {
-                    startOption += `<span class='startOtion notExist'>${SparnaturalQuerySummaryI18n.labels.notexist}</span>`;
+                if (branch?.notExists === true) {
+                    startOption += `<span class='startOption notExist'>${SparnaturalQuerySummaryI18n.labels.notexist}</span> `;
                 }
 
                 if (nbChildren > 1) {
@@ -82,7 +85,7 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                     
                 } else {
                     if (!isRoot) {
-                        startLogic = `<span class='logic Where'>${SparnaturalQuerySummaryI18n.labels.where}</span>`;
+                        //startLogic = `<span class='logic Where'>${SparnaturalQuerySummaryI18n.labels.where}</span>`;
                     }
                 }
                 let selectedValues = "";
@@ -103,17 +106,22 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                 } else {
                     if (branch.children.length == 0) {
                         selectedValues += `<span class="selectedValue">${SparnaturalQuerySummaryI18n.labels.any}</span>`;
+                    } else {
+                        endLogic = ` <span class='logic Where'>${SparnaturalQuerySummaryI18n.labels.where}</span>`;
                     }
                 }
                 if(selectedValues != "") {
                     selectedValues = `<div class='selectedValues'>${labelSelectedValues}${selectedValues}</div>`;
                 }
+                if (nbChildren == 1) {
+                    whereStartLabel = `<strong class="sumSujet">${startLabel}${sSelceted}</strong> `;
+                }
 
                 let htmlLI ="" ;
                 if ((isRoot) && (nbChildren == 1)) {
-                    htmlLI = `<li><div class="line">${startLogic}${startOption}<strong>${startLabel}${sSelceted}</strong> ${propLabel} <strong>${endLabel}${oSelceted}</strong>${selectedValues}</div>`;
+                    htmlLI = `<li><div class="line">${startLogic}${startOption}<strong class="sumSujet">${startLabel}${sSelceted}</strong> <span class="sumPredicat">${propLabel}</span> <strong class="sumObjet">${endLabel}${oSelceted}</strong>${endLogic}${selectedValues}</div>`;
                 } else {
-                    htmlLI = `<li><div class="line">${startLogic}${startOption} ${propLabel} <strong>${endLabel}${oSelceted}</strong>${selectedValues}</div>`;
+                    htmlLI = `<li><div class="line">${startLogic}${startOption} ${whereStartLabel}<span class="sumPredicat">${propLabel}</span> <strong class="sumObjet">${endLabel}${oSelceted}</strong>${selectedValues}${endLogic}</div>`;
                 }
                 htmlLI += this.formatChildsItems(branch.children, variables, false)+'</li>' ;
                 htmlUL += htmlLI;

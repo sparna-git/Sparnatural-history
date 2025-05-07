@@ -14,25 +14,40 @@
                 border: 1px solid var( --primary-color-main);
                 color: var(--default-text-color) ;
                 border-radius: 3px;
-                margin-right: 3px;
+                margin-right: 1px;
+                &.where {
+                    margin-right: 0;
+                }
             }
             svg {
                 display: inline-block;
                 height: 16px;
                 width: 16px;
-                margin-left: 5px;
+                margin-left: 2px;
             }
             strong {
                 font-weight: normal;
                 color: var(--primary-color-main);
             }
-            .startOtion {
+            .startOption {
                 margin-left: 5px;
+                padding-right: 2px;
                 color: var(--secondary-color-important);
+            }
+            &>.line {
+                &>.sumSujet {
+                    display: inline-block;
+                    padding-right: 2px;
+                }
+                &>.sumObjet {
+                    display: inline-block;
+                    padding-left: 2px;
+                    padding-right: 3px;
+                }
             }
             .selectedValues {
                 color: var(--silver-color-main) ;
-                display: inline-block;
+                display: inline;
                 padding-left: 3px;
                 &>span {
                     display: inline-block;

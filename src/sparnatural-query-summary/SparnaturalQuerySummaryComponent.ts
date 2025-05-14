@@ -116,16 +116,16 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                     selectedValues = `<div class='selectedValues'>${labelSelectedValues}${selectedValues}</div>`;
                 }
                 if (nbChildren == 1) {
-                    whereStartLabel = `<strong class="sumSujet">${startLabel}${sSelceted}</strong> `;
+                    whereStartLabel = `${startOption} <strong class="sumSujet">${startLabel}${sSelceted}</strong> `;
                 } else {
-                    whereStartLabel = `<strong class="sumSujet ${displaystartLabel}">${startLabel}${sSelceted}</strong> `;
+                    whereStartLabel = `<strong class="sumSujet ${displaystartLabel}">${startLabel}${sSelceted}</strong> ${startOption} `;
                 }
 
                 let htmlLI ="" ;
                 if ((isRoot) && (nbChildren == 1)) {
                     htmlLI = `<li><div class="line">${startLogic}${startOption}<strong class="sumSujet">${startLabel}${sSelceted}</strong> <span class="sumPredicat">${propLabel}</span> <strong class="sumObjet">${endLabel}${oSelceted}</strong>${endLogic}${selectedValues}</div>`;
                 } else {
-                    htmlLI = `<li><div class="line">${startLogic}${startOption} ${whereStartLabel} <span class="sumPredicat">${propLabel}</span> <strong class="sumObjet">${endLabel}${oSelceted}</strong>${selectedValues}${endLogic}</div>`;
+                    htmlLI = `<li><div class="line">${startLogic} ${whereStartLabel} <span class="sumPredicat">${propLabel}</span> <strong class="sumObjet">${endLabel}${oSelceted}</strong>${selectedValues}${endLogic}</div>`;
                 }
                 htmlLI += this.formatChildsItems(branch.children, variables, false)+'</li>' ;
                 htmlUL += htmlLI;

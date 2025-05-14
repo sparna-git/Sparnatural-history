@@ -38,6 +38,9 @@
                 &>.sumSujet {
                     display: inline-block;
                     padding-right: 2px;
+                    &.transparentitem {
+                        opacity: 0;
+                    }
                 }
                 &>.sumObjet {
                     display: inline-block;

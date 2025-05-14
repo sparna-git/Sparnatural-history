@@ -52,8 +52,9 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                 let sSelceted = "" ;
                 let oSelceted = "" ;
                 let whereStartLabel = "" ;
+                let displaystartLabel = "" ;
                 console.log(branch) ;
-                if (variables.includes(branch.line.s)) {
+                if ((variables.includes(branch.line.s)) && (isRoot)) {
                     sSelceted = SparnaturalQuerySummaryComponent.ICON_EYE ;
                 }
                 if (variables.includes(branch.line.o)) {
@@ -81,7 +82,8 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                 }
 
                 if (nbChildren > 1) {
-                      startLogic = `<span class='logic And'>${SparnaturalQuerySummaryI18n.labels.and}</span>`;
+                      //startLogic = `<span class='logic And'>${SparnaturalQuerySummaryI18n.labels.and}</span>`;
+                      displaystartLabel = "transparentitem"
                     
                 } else {
                     if (!isRoot) {
@@ -107,7 +109,7 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                     if (branch.children.length == 0) {
                         selectedValues += `<span class="selectedValue">${SparnaturalQuerySummaryI18n.labels.any}</span>`;
                     } else {
-                        endLogic = ` <span class='logic Where'>${SparnaturalQuerySummaryI18n.labels.where}</span>`;
+                        //endLogic = ` <span class='logic Where'>${SparnaturalQuerySummaryI18n.labels.where}</span>`;
                     }
                 }
                 if(selectedValues != "") {
@@ -115,13 +117,15 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                 }
                 if (nbChildren == 1) {
                     whereStartLabel = `<strong class="sumSujet">${startLabel}${sSelceted}</strong> `;
+                } else {
+                    whereStartLabel = `<strong class="sumSujet ${displaystartLabel}">${startLabel}${sSelceted}</strong> `;
                 }
 
                 let htmlLI ="" ;
                 if ((isRoot) && (nbChildren == 1)) {
                     htmlLI = `<li><div class="line">${startLogic}${startOption}<strong class="sumSujet">${startLabel}${sSelceted}</strong> <span class="sumPredicat">${propLabel}</span> <strong class="sumObjet">${endLabel}${oSelceted}</strong>${endLogic}${selectedValues}</div>`;
                 } else {
-                    htmlLI = `<li><div class="line">${startLogic}${startOption} ${whereStartLabel}<span class="sumPredicat">${propLabel}</span> <strong class="sumObjet">${endLabel}${oSelceted}</strong>${selectedValues}${endLogic}</div>`;
+                    htmlLI = `<li><div class="line">${startLogic}${startOption} ${whereStartLabel} <span class="sumPredicat">${propLabel}</span> <strong class="sumObjet">${endLabel}${oSelceted}</strong>${selectedValues}${endLogic}</div>`;
                 }
                 htmlLI += this.formatChildsItems(branch.children, variables, false)+'</li>' ;
                 htmlUL += htmlLI;

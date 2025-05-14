@@ -27,6 +27,7 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
     render(): this {
         this.#initLang();
         this.querySummary = this.formatQuerySummary(this.queryJson, this.specProvider);
+        this.addPaddings();
 
         return this;
     }
@@ -153,5 +154,34 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
       
     private extractLastSegment = (uri: string): string =>
         uri ? uri.substring(uri.lastIndexOf("/") + 1) : "Inconnu";
+
+
+    private addPaddings() {
+
+        // create the temporary Element
+      
+        const ruler = document.createElement('div');
+        ruler.style.width = 'auto';
+        ruler.style.position = 'absolute';
+        ruler.style.whiteSpace = 'nowrap';
+        // Adding the element as a child to myElement.
+      
+        // it will be added to the DOM
+        ruler.innerHTML = this.querySummary;
+        document.body.appendChild(ruler);
+        let uls = ruler.querySelectorAll('ul');
+        uls.forEach((ul:any) => {
+            if (ul.parentElement.tagName == 'LI') {
+                //ul.parentElement.style.color = "red";
+                let sumSujets = ul.querySelectorAll('.sumSujet');
+                let width = sumSujets[0].offsetWidth ;
+                ul.style.marginLeft  = width+'px' ;
+              }
+        }) ;
+        this.querySummary = ruler.innerHTML;
+      
+        document.body.removeChild(ruler);
+      
+      };
 
 }

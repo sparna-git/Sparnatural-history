@@ -1,5 +1,5 @@
 import "datatables.net";
-import $ from "jquery";
+import $, { get } from "jquery";
 import LocalDataStorage from "../storage/LocalDataStorage";
 import HTMLComponent from "sparnatural/src/sparnatural/components/HtmlComponent";
 import {
@@ -21,6 +21,7 @@ class HistorySection extends HTMLComponent {
   specProvider: ISparnaturalSpecification;
   private confirmationModal: ConfirmationModal;
   private dateFilterModal: DateFilterModal;
+  lang: string;
 
   constructor(ParentComponent: HTMLComponent) {
     super("historySection", ParentComponent, null);
@@ -99,6 +100,8 @@ class HistorySection extends HTMLComponent {
         const now = new Date();
         const isToday = dateObj.toDateString() === now.toDateString();
         const lang = getSettings().language === "fr" ? "fr-FR" : "en-US";
+        this.lang = getSettings().language;
+        console.log("lang", this.lang);
         const dateDisplay = isToday
           ? dateObj.toLocaleTimeString(lang, {
               hour: "2-digit",
@@ -124,7 +127,7 @@ class HistorySection extends HTMLComponent {
     <button class="generate-summary-btn" data-id="${
       entry.id
     }" title="Generate Summary">
-      <i class="fas fa-magic"></i>
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
     </button>
   </div>`,
           this.formatQuerySummary(parsedQuery, this.specProvider),
@@ -265,31 +268,23 @@ class HistorySection extends HTMLComponent {
         $("#queryHistoryTable tbody").on(
           "click",
           ".generate-summary-btn",
-          async function () {
-            const $button = $(this);
-            const id = $button.data("id"); // Récupérer l'ID de la ligne
+          async (e) => {
+            const $button = $(e.currentTarget);
+            const id = $button.data("id");
             const storage = LocalDataStorage.getInstance();
             const history = storage.getHistory();
             const query = history.find((q: any) => q.id === id);
+            if (!query) return;
 
-            if (!query) {
-              console.error("Query not found for ID:", id);
-              return;
-            }
-            const projectKey = "dbpedia-en"; // Remplacez par le projectKey approprié
-
-            // Appeler la méthode pour générer le résumé
+            const projectKey = "dbpedia-en";
             const generatedSummary = await generateSummaryFromAPI(
               query.queryJson,
-              "en",
+              this.lang,
               projectKey
             );
 
             if (generatedSummary) {
-              // Mettre à jour le champ <textarea> avec le résumé généré
               $button.siblings(".summary-natural").val(generatedSummary);
-
-              // Sauvegarder le résumé généré dans le stockage local
               query.summary = generatedSummary;
               storage.set("queryHistory", history);
             }
@@ -451,7 +446,7 @@ class HistorySection extends HTMLComponent {
 
 async function generateSummaryFromAPI(
   queryJson: any,
-  lang: string = "en",
+  lang: string = "fr",
   projectKey: string = "default" // Ajout du projectKey avec une valeur par défaut
 ): Promise<string | null> {
   try {

@@ -30,3 +30,6 @@
 
 // Style général de la modale de l'historique
 @use "./history/history-modal.scss";
+
+// Résumé de la requête (date, nombre de résultats, etc.)
+@use "./history/history-natural-resume.scss";

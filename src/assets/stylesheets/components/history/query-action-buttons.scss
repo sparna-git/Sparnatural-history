@@ -1,43 +1,69 @@
-// actions buttons
+/* S'assurer que chaque ligne peut servir de contexte pour position: absolute */
+#queryHistoryTable tbody tr {
+  position: relative;
+}
+
+/* Positionnement absolu des boutons comme dans icon-wrapper */
 .actions-btn {
-  button {
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 5px;
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  display: none;
+  flex-direction: row;
+  margin-right: 15px;
+  gap: 8px;
+  background: #ddd;
+  border-radius: 5px;
+  z-index: 10;
+  //box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
 
-    &.btn-orange {
-      background: rgb(218, 141, 0);
-      color: white;
+/* Afficher les boutons au survol de la ligne */
+#queryHistoryTable tbody tr:hover .actions-btn {
+  display: flex;
+}
 
-      &:hover {
-        background: rgb(255, 140, 0);
-      }
-    }
+/* Style des boutons */
+.actions-btn button {
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 4px 8px;
+}
 
-    &.btn-red,
-    &.btn-green {
-      background: #dddddd;
-      color: black;
+/* Bouton orange */
+.actions-btn button.btn-orange {
+  background: rgb(218, 141, 0);
+  color: white;
+}
+.actions-btn button.btn-orange:hover {
+  background: rgb(255, 140, 0);
+}
 
-      &:hover {
-        background: #666666;
-        color: white;
-      }
-    }
-  }
+/* Boutons gris/rouge/vert */
+.actions-btn button.btn-red,
+.actions-btn button.btn-green {
+  background: #dddddd;
+  color: black;
+}
+.actions-btn button.btn-red:hover,
+.actions-btn button.btn-green:hover {
+  background: #666666;
+  color: white;
+}
 
-  // Pour cibler le bouton externe "#openDateFilter" tout en gardant la logique SCSS
-  #openDateFilter {
-    background: #dddddd;
-    color: black;
-
-    &:hover {
-      background: #666666;
-      color: white;
-    }
-  }
+/* Autres éléments */
+#openDateFilter {
+  background: #dddddd;
+  color: black;
+}
+#openDateFilter:hover {
+  background: #666666;
+  color: white;
+}
+.hidden {
+  display: none !important;
 }

@@ -1,6 +1,6 @@
-import "./assets/stylesheets/sparnatural-history.scss";
+import "../scss/sparnatural-history.scss";
 import SparnaturalHistoryComponent from "./sparnatural-history/component/SparnaturalHistoryComponent";
-import { ISparJson } from "sparnatural/src/sparnatural/generators/json/ISparJson";
+import { SparnaturalQueryIfc } from "sparnatural";
 // import QueryLoader from "./sparnatural/querypreloading/QueryLoader";
 // import SparnaturalComponent from "./sparnatural/components/SparnaturalComponent";
 import { SparnaturalHistoryAttributes } from "./SparnaturalHistoryAttributes";
@@ -19,7 +19,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
   // just to avoid name clash with "attributes"
   _attributes: SparnaturalHistoryAttributes;
 
-  private lastQueryJson: ISparJson = null;
+  private lastQueryJson: SparnaturalQueryIfc = null;
 
   sparnaturalHistory: SparnaturalHistoryComponent;
   // sparnatural: SparnaturalComponent;
@@ -77,7 +77,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
     this.sparnaturalHistory.setSpecProvider(config);
   }
 
-  triggerLoadQueryEvent(query: ISparJson) {
+  triggerLoadQueryEvent(query: SparnaturalQueryIfc) {
     // Dispatch LOAD_QUERY event
     this.dispatchEvent(
       new CustomEvent(SparnaturalHistoryElement.EVENT_LOAD_QUERY, {
@@ -88,7 +88,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
   }
 
   // Méthode pour sauvegarder la requête dans le local storage
-  saveQuery(queryJson: ISparJson): void {
+  saveQuery(queryJson: SparnaturalQueryIfc): void {
     if (!queryJson) {
       console.error("Impossible de sauvegarder une requête vide !");
       return;
@@ -99,7 +99,10 @@ export class SparnaturalHistoryElement extends HTMLElement {
     // Vérifier si la requête existe déjà dans l'historique
     const alreadyExists = storage
       .getHistory()
-      .some((q: ISparJson) => JSON.stringify(q) === JSON.stringify(queryJson));
+      .some(
+        (q: SparnaturalQueryIfc) =>
+          JSON.stringify(q) === JSON.stringify(queryJson)
+      );
 
     if (!alreadyExists) {
       storage.saveQuery(queryJson);

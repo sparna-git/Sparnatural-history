@@ -1,3 +1,4 @@
+import { SparnaturalQueryIfc } from "sparnatural";
 class LocalDataStorage {
   // Instance stores a reference to the Singleton
   private static instance: any;
@@ -33,7 +34,7 @@ class LocalDataStorage {
     return LocalDataStorage.instance;
   }
 
-  saveQuery(queryJson: any): void {
+  saveQuery(queryJson: SparnaturalQueryIfc): void {
     if (!queryJson) {
       console.error("Impossible de sauvegarder une requête vide !");
       return;

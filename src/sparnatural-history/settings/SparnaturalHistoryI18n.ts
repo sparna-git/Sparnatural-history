@@ -2,8 +2,8 @@
 
 export class SparnaturalHistoryI18n {
   static i18nLabelsResources: any = {
-    en: require("../../assets/lang/en-Hist.json"),
-    fr: require("../../assets/lang/fr-Hist.json"),
+    en: require("../lang/en-Hist.json"),
+    fr: require("../lang/fr-Hist.json"),
   };
 
   public static labels: any;

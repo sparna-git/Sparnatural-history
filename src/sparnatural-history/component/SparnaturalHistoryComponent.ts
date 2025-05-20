@@ -1,5 +1,5 @@
-import HTMLComponent from "sparnatural/src/sparnatural/components/HtmlComponent";
-import ISparnaturalSpecification from "sparnatural/src/sparnatural/spec-providers/ISparnaturalSpecification";
+import { HTMLComponent } from "sparnatural";
+import { ISparnaturalSpecification } from "sparnatural";
 import HistorySection from "./HistorySection";
 import "datatables.net";
 import { SparnaturalHistoryElement } from "../../SparnaturalHistoryElement";

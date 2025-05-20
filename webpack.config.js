@@ -1,21 +1,18 @@
 const webpack = require("webpack");
 const path = require("path");
-const WriteFilePlugin = require("write-file-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const DashboardPlugin = require("webpack-dashboard/plugin");
 const CopyPlugin = require("copy-webpack-plugin");
-const FileManagerPlugin = require("filemanager-webpack-plugin");
-
-const BundleAnalyzerPlugin =
-  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 module.exports = {
   entry: {
-    "sparnatural-history": "./src/SparnaturalHistoryElement.ts",
+    "sparnatural-history": [
+      "./src/SparnaturalHistoryElement.ts",
+      "./scss/sparnatural-history.scss",
+    ],
   },
   output: {
-    path: path.resolve(__dirname, "./dist"),
+    path: path.resolve(__dirname, "./dist/browser"),
     filename: "[name].js",
     clean: true,
   },
@@ -24,7 +21,7 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: { loader: "babel-loader" },
+        use: "babel-loader",
       },
       {
         test: /\.ts$/,
@@ -38,30 +35,24 @@ module.exports = {
       {
         test: /\.(sass|scss)$/,
         use: [
+          MiniCssExtractPlugin.loader,
           {
-            loader: MiniCssExtractPlugin.loader,
+            loader: "css-loader",
+            options: { sourceMap: true },
           },
           {
-            loader: "css-loader", // translates CSS into CommonJS
+            loader: "sass-loader",
             options: {
-              sourceMap: true,
+              sassOptions: {
+                includePaths: ["node_modules"],
+              },
             },
-          },
-          {
-            loader: "sass-loader", // compiles Sass to CSS
           },
         ],
       },
       {
         test: /\.css$/,
-        use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
-          {
-            loader: "css-loader", // translates CSS into CommonJS
-          },
-        ],
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
       {
         test: /\.(png|jp(e*)g|svg|gif)$/,
@@ -70,8 +61,6 @@ module.exports = {
             loader: "url-loader",
             options: {
               limit: 8000,
-              // Convert images < 8kb to base64 strings
-              // in case larger images are processed by file-loader
               name: "images/[hash]-[name].[ext]",
             },
           },
@@ -83,12 +72,14 @@ module.exports = {
     fallback: {
       util: require.resolve("util/"),
       buffer: require.resolve("buffer/"),
+      stream: require.resolve("stream-browserify"),
+      process: require.resolve("process/browser"),
     },
     extensions: [".tsx", ".ts", ".js"],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      filename: "dev-page/index.html", // Utiliser un nom différent pour la nouvelle page
+      filename: "dev-page/index.html",
       template: __dirname + "/dev-page/index.html",
       inject: false,
       templateParameters: (compilation, assets) => {
@@ -106,22 +97,26 @@ module.exports = {
       filename: "[name].css",
       chunkFilename: "[id].css",
     }),
+
     new CopyPlugin({
       patterns: [
         {
           from: __dirname + "/dev-page",
           to: "dev-page",
           globOptions: {
-            ignore: ["**/index.html"], // Assure-toi de ne pas copier ces fichiers déjà générés
+            ignore: ["**/index.html"],
           },
         },
       ],
     }),
 
-    // so that JQuery is automatically inserted
     new webpack.ProvidePlugin({
       $: "jquery",
       jQuery: "jquery",
+    }),
+    new webpack.ProvidePlugin({
+      process: "process/browser",
+      Buffer: ["buffer", "Buffer"],
     }),
   ],
   devServer: {

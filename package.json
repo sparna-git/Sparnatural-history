@@ -33,7 +33,7 @@
     "sass-loader": "^16.0.4",
     "ts-loader": "^9.5.1",
     "url-loader": "^4.1.1",
-    "webpack": "^5.97.1",
+    "webpack": "^5.99.8",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^6.0.1",
     "webpack-dashboard": "^3.3.8",
@@ -43,7 +43,8 @@
   "dependencies": {
     "datatables.net": "^2.2.2",
     "datatables.net-bs4": "^2.2.2",
-    "sparnatural": "^10.1.2",
+    "sparnatural": "^11.0.1",
+    "stream-browserify": "^3.0.0",
     "util": "^0.12.5"
   }
 }

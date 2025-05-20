@@ -10,7 +10,6 @@ import {
 } from "sparnatural/src/sparnatural/generators/json/ISparJson";
 import ISparnaturalSpecification from "sparnatural/src/sparnatural/spec-providers/ISparnaturalSpecification";
 import ConfirmationModal from "./ConfirmationModal";
-import { QueryHistory } from "./QueryHistory";
 import { SparnaturalHistoryElement } from "../../SparnaturalHistoryElement";
 import { SparnaturalHistoryI18n } from "../settings/SparnaturalHistoryI18n";
 import { getSettings } from "../settings/defaultSettings";
@@ -192,6 +191,11 @@ class HistorySection extends HTMLComponent {
           textarea.setAttribute("spellcheck", "false");
           textarea.setAttribute("autocorrect", "off");
           textarea.setAttribute("autocomplete", "off");
+          const $textarea = $(textarea);
+          const $button = $textarea.siblings(".generate-summary-btn");
+          const isEmpty = $textarea.val().toString().trim() === "";
+          $button.prop("disabled", !isEmpty);
+          $button.toggleClass("disabled", !isEmpty);
         });
 
         // Gestionnaire d'événements pour sauvegarder automatiquement le résumé
@@ -214,6 +218,57 @@ class HistorySection extends HTMLComponent {
               query.summary = newSummary; // Mettre à jour le résumé
               storage.set("queryHistory", history); // Sauvegarder dans le stockage local
             }
+          }
+        );
+
+        // Empêche la génération si le champ n'est pas vide
+        $("#queryHistoryTable tbody").on(
+          "input",
+          ".summary-natural",
+          function () {
+            const $textarea = $(this);
+            const $button = $textarea.siblings(".generate-summary-btn");
+            const isEmpty = $textarea.val().toString().trim() === "";
+
+            // Activer ou désactiver le bouton selon que le champ est vide
+            $button.prop("disabled", !isEmpty);
+
+            // Optionnel : ajouter un style visuel pour le bouton désactivé
+            $button.toggleClass("disabled", !isEmpty);
+          }
+        );
+
+        $("#queryHistoryTable tbody").on(
+          "click",
+          ".generate-summary-btn",
+          async (e) => {
+            const $button = $(e.currentTarget);
+            // désactiver le bouton et le griser tout de suite
+            $button.prop("disabled", true);
+            $button.addClass("disabled");
+
+            const id = $button.data("id");
+            const storage = LocalDataStorage.getInstance();
+            const history = storage.getHistory();
+            const query = history.find((q: any) => q.id === id);
+            if (!query) return;
+
+            const projectKey = "dbpedia-en";
+            const generatedSummary = await generateSummaryFromAPI(
+              query.queryJson,
+              this.lang,
+              projectKey
+            );
+
+            if (generatedSummary) {
+              $button.siblings(".summary-natural").val(generatedSummary);
+              query.summary = generatedSummary;
+              storage.set("queryHistory", history);
+            }
+
+            // Optionnel: si tu veux réactiver le bouton après génération
+            // $button.prop("disabled", false);
+            // $button.removeClass("disabled");
           }
         );
 

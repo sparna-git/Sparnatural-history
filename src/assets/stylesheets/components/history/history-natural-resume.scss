@@ -13,7 +13,7 @@
   overflow-y: auto;
   border: none;
   outline: none;
-  resize: none;
+  //resize: none;
   padding: 6px 8px;
   font-family: inherit;
   font-size: 1rem;
@@ -29,7 +29,13 @@
   position: absolute;
   top: 0;
   right: 0;
-  background: linear-gradient(-45deg, #6a11cb, #2575fc, #ff006e, #6a11cb);
+  background: linear-gradient(
+    -45deg,
+    rgb(2, 184, 117),
+    rgb(250, 136, 3),
+    rgb(2, 184, 117),
+    rgb(240, 149, 45)
+  );
   background-size: 400% 400%;
   color: white;
   border: none;
@@ -61,4 +67,37 @@
   100% {
     background-position: 0% 50%;
   }
+}
+
+.generate-summary-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 50%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: skewX(-25deg);
+  animation: shine 2.8s infinite;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  0% {
+    left: -60%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+.generate-summary-btn.disabled {
+  opacity: 0.4;
+  background: gray;
+  color: black;
+  cursor: not-allowed;
+}
+
+.generate-summary-btn.disabled::before {
+  animation: none;
 }

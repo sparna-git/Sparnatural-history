@@ -73,15 +73,15 @@ class HistorySection extends HTMLComponent {
     this.html.addClass("history-modal-open");
 
     const modalHtml = `
-      <div id="historyModal" class="history-modal">
-        <div class="table-container">
-          <table id="queryHistoryTable" class="display"><tbody></tbody></table>
-        </div>
-        <div class="history-actions">
-          <button id="resetHistory"><strong>${SparnaturalHistoryI18n.labels["clearHistory"]}</strong><i class="fas fa-eraser"></i></button>
-          <button id="closeHistory" class="btn-red"><strong>${SparnaturalHistoryI18n.labels["close"]}</strong><i class="fas fa-times"></i></button>
-        </div>
-      </div>`;
+    <div id="historyModal" class="history-modal">
+      <div class="table-container">
+        <table id="queryHistoryTable" class="display"><tbody></tbody></table>
+      </div>
+      <div class="history-actions">
+        <button id="resetHistory"><strong>${SparnaturalHistoryI18n.labels["clearHistory"]}</strong><i class="fas fa-eraser"></i></button>
+        <button id="closeHistory" class="btn-red"><strong>${SparnaturalHistoryI18n.labels["close"]}</strong><i class="fas fa-times"></i></button>
+      </div>
+    </div>`;
     this.html.append(modalHtml);
 
     // Extend DataTables to include the 'ext' property
@@ -97,13 +97,10 @@ class HistorySection extends HTMLComponent {
     });
 
     const tableData = history
-      .map((entry) => {
+      .map((entry: SparnaturalQueryIfc) => {
         let parsedQuery;
         try {
-          parsedQuery =
-            typeof entry.queryJson === "string"
-              ? JSON.parse(entry.queryJson)
-              : entry.queryJson;
+          parsedQuery = typeof entry === "string" ? JSON.parse(entry) : entry;
         } catch {
           return null;
         }
@@ -111,7 +108,7 @@ class HistorySection extends HTMLComponent {
         const entityType = this.getEntityType(parsedQuery);
         const entity = this.getEntityLabel(entityType);
 
-        const dateObj = new Date(entry.date);
+        const dateObj = new Date(entry.metadata.date);
         const now = new Date();
         const isToday = dateObj.toDateString() === now.toDateString();
         const lang = getSettings().language === "fr" ? "fr-FR" : "en-US";
@@ -130,28 +127,28 @@ class HistorySection extends HTMLComponent {
 
         return [
           `<button class="favorite-query" data-id="${
-            entry.id
+            entry.metadata.id
           }"><i class="favorite-icon ${
-            entry.isFavorite ? "fas" : "far"
+            entry.metadata.isFavorite ? "fas" : "far"
           } fa-star"></i></button>`,
           entity,
           `<div class="summary-container">
-    <textarea class="summary-natural" placeholder="${
-      SparnaturalHistoryI18n.labels["SaisirResume"]
-    }">${entry.summary || ""}</textarea>
-    <button class="generate-summary-btn" data-id="${
-      entry.id
-    }" title="Generate Summary">
-      <i class="fa-solid fa-wand-magic-sparkles"></i>
-    </button>
-  </div>`,
+          <textarea class="summary-natural" placeholder="${
+            SparnaturalHistoryI18n.labels["SaisirResume"]
+          }">${entry.metadata.description?.[this.lang] || ""}</textarea>
+          <button class="generate-summary-btn" data-id="${
+            entry.metadata.id
+          }" title="Generate Summary">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </button>
+        </div>`,
           this.formatQuerySummary(parsedQuery, this.specProvider),
           dateDisplay,
           `<div class="actions-btn hidden">
-    <button class="load-query btn-orange" data-id="${entry.id}" title="${SparnaturalHistoryI18n.labels["loadQuery"]}"><i class="fas fa-sync"></i></button>
-    <button class="save-query btn-green" data-id="${entry.id}" title="${SparnaturalHistoryI18n.labels["copyQuery"]}"><i class="fas fa-copy"></i></button>
-    <button class="delete-query btn-red" data-id="${entry.id}"><i class="fas fa-trash"></i></button>
-  </div>`,
+          <button class="load-query btn-orange" data-id="${entry.metadata.id}" title="${SparnaturalHistoryI18n.labels["loadQuery"]}"><i class="fas fa-sync"></i></button>
+          <button class="save-query btn-green" data-id="${entry.metadata.id}" title="${SparnaturalHistoryI18n.labels["copyQuery"]}"><i class="fas fa-copy"></i></button>
+          <button class="delete-query btn-red" data-id="${entry.metadata.id}"><i class="fas fa-trash"></i></button>
+        </div>`,
           dateISO,
         ];
       })
@@ -224,9 +221,14 @@ class HistorySection extends HTMLComponent {
             // Sauvegarder dans le stockage local
             const storage = LocalDataStorage.getInstance();
             const history = storage.getHistory();
-            const query = history.find((q: any) => q.id === id);
+            const query = history.find(
+              (q: SparnaturalQueryIfc) => q.metadata.id === id
+            );
             if (query) {
-              query.summary = newSummary; // Mettre à jour le résumé
+              if (!query.metadata.description) {
+                query.metadata.description = {};
+              }
+              query.metadata.description[this.lang] = newSummary; // Mettre à jour la description
               storage.set("queryHistory", history); // Sauvegarder dans le stockage local
             }
           }
@@ -270,10 +272,12 @@ class HistorySection extends HTMLComponent {
           .off("click")
           .on("click", (e) => {
             const id = $(e.currentTarget).data("id");
-            const query = history.find((q) => q.id === id);
+            const query = history.find(
+              (q: SparnaturalQueryIfc) => q.metadata.id === id
+            );
             if (!query) return;
             navigator.clipboard
-              .writeText(JSON.stringify(query.queryJson, null, 2))
+              .writeText(JSON.stringify(query, null, 2))
               .then(() =>
                 this.showToast(SparnaturalHistoryI18n.labels["MessageExport"])
               )
@@ -288,19 +292,24 @@ class HistorySection extends HTMLComponent {
             const id = $button.data("id");
             const storage = LocalDataStorage.getInstance();
             const history = storage.getHistory();
-            const query = history.find((q: any) => q.id === id);
+            const query = history.find(
+              (q: SparnaturalQueryIfc) => q.metadata.id === id
+            );
             if (!query) return;
 
             const projectKey = "dbpedia-en";
             const generatedSummary = await generateSummaryFromAPI(
-              query.queryJson,
+              query,
               this.lang,
               projectKey
             );
 
             if (generatedSummary) {
               $button.siblings(".summary-natural").val(generatedSummary);
-              query.summary = generatedSummary;
+              if (!query.metadata.description) {
+                query.metadata.description = {};
+              }
+              query.metadata.description[this.lang] = generatedSummary;
               storage.set("queryHistory", history);
             }
           }
@@ -312,13 +321,13 @@ class HistorySection extends HTMLComponent {
       .find("#queryHistoryTable_wrapper .dt-layout-row")
       .first();
     layoutRow.append(`
-      <div class="dt-layout-cell" style="flex: 0 0 auto; display: flex; align-items: center; gap: 10px;">
-        <div style="width: 10px;"></div>
-        <button id="openDateFilter" class="btn-yellow">
-          <i class="fas fa-calendar-alt"></i>
-        </button>
-      </div>
-    `);
+    <div class="dt-layout-cell" style="flex: 0 0 auto; display: flex; align-items: center; gap: 10px;">
+      <div style="width: 10px;"></div>
+      <button id="openDateFilter" class="btn-yellow">
+        <i class="fas fa-calendar-alt"></i>
+      </button>
+    </div>
+  `);
 
     this.html
       .find("#openDateFilter")
@@ -354,18 +363,16 @@ class HistorySection extends HTMLComponent {
   private loadQuery(event: JQuery.ClickEvent) {
     const id = $(event.currentTarget).data("id");
     const storage = LocalDataStorage.getInstance();
-    const query = storage.getHistory().find((q: { id: any }) => q.id === id);
+    const query = storage
+      .getHistory()
+      .find((q: SparnaturalQueryIfc) => q.metadata.id === id);
     if (!query) return;
 
-    const parsed =
-      typeof query.queryJson === "string"
-        ? JSON.parse(query.queryJson)
-        : query.queryJson;
     const historyElement = document.querySelector(
       "sparnatural-history"
     ) as SparnaturalHistoryElement;
     if (historyElement) {
-      historyElement.triggerLoadQueryEvent(parsed);
+      historyElement.triggerLoadQueryEvent(query);
       $("#historyModal, .history-overlay").remove();
       $("body").removeClass("history-modal-open");
     }
@@ -375,10 +382,12 @@ class HistorySection extends HTMLComponent {
     const id = $(event.currentTarget).data("id");
     const storage = LocalDataStorage.getInstance();
     const history = storage.getHistory();
-    const query = history.find((q: any) => q.id === id);
+    const query = history.find(
+      (q: SparnaturalQueryIfc) => q.metadata.id === id
+    );
     if (!query) return;
 
-    query.isFavorite = !query.isFavorite;
+    query.metadata.isFavorite = !query.metadata.isFavorite;
     storage.set("queryHistory", history);
     this.initializeFavorites();
   }
@@ -389,12 +398,14 @@ class HistorySection extends HTMLComponent {
 
     $(".favorite-query").each(function () {
       const id = $(this).data("id");
-      const query = history.find((q: { id: any }) => q.id === id);
+      const query = history.find(
+        (q: SparnaturalQueryIfc) => q.metadata.id === id
+      );
       const icon = $(this).find("i");
       icon
         .removeClass("fas fa-star far fa-star")
-        .addClass(query?.isFavorite ? "fas fa-star" : "far fa-star")
-        .css("color", query?.isFavorite ? "#ffcc00" : "#b5b5b5");
+        .addClass(query?.metadata.isFavorite ? "fas fa-star" : "far fa-star")
+        .css("color", query?.metadata.isFavorite ? "#ffcc00" : "#b5b5b5");
     });
   }
 

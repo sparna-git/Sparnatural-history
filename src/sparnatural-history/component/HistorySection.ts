@@ -111,6 +111,12 @@ class HistorySection extends HTMLComponent {
               month: "2-digit",
             });
         const dateISO = dateObj.toISOString();
+        const mistralApiUrl = getSettings().urlAPI;
+        const generateSummaryButton = mistralApiUrl
+          ? `<button class="generate-summary-btn" data-id="${entry.id}" title="Generate Summary">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </button>`
+          : "";
 
         return [
           `<button class="favorite-query" data-id="${
@@ -120,15 +126,11 @@ class HistorySection extends HTMLComponent {
           } fa-star"></i></button>`,
           entity,
           `<div class="summary-container">
-    <textarea class="summary-natural" placeholder="${
-      SparnaturalHistoryI18n.labels["SaisirResume"]
-    }">${entry.summary || ""}</textarea>
-    <button class="generate-summary-btn" data-id="${
-      entry.id
-    }" title="Generate Summary">
-      <i class="fa-solid fa-wand-magic-sparkles"></i>
-    </button>
-  </div>`,
+          <textarea class="summary-natural" placeholder="${
+            SparnaturalHistoryI18n.labels["SaisirResume"]
+          }">${entry.summary || ""}</textarea>
+          ${generateSummaryButton}
+        </div>`,
           this.formatQuerySummary(parsedQuery, this.specProvider),
           dateDisplay,
           `<div class="actions-btn hidden">
@@ -253,12 +255,12 @@ class HistorySection extends HTMLComponent {
             const query = history.find((q: any) => q.id === id);
             if (!query) return;
 
-            const projectKey = "dbpedia-en";
             const generatedSummary = await generateSummaryFromAPI(
               query.queryJson,
               this.lang,
-              projectKey
+              getSettings().urlAPI
             );
+            console.log("API mistral", getSettings().urlAPI);
 
             if (generatedSummary) {
               $button.siblings(".summary-natural").val(generatedSummary);
@@ -320,31 +322,41 @@ class HistorySection extends HTMLComponent {
               .catch(() => this.showToast("Échec de la copie", 4000));
           });
 
-        $("#queryHistoryTable tbody").on(
-          "click",
-          ".generate-summary-btn",
-          async (e) => {
-            const $button = $(e.currentTarget);
-            const id = $button.data("id");
-            const storage = LocalDataStorage.getInstance();
-            const history = storage.getHistory();
-            const query = history.find((q: any) => q.id === id);
-            if (!query) return;
+        // Ajoutez un gestionnaire d'événements pour le bouton "Generate Summary" seulement si l'URL est disponible
+        if (getSettings().urlAPI) {
+          $("#queryHistoryTable tbody").on(
+            "click",
+            ".generate-summary-btn",
+            async (e) => {
+              const $button = $(e.currentTarget);
+              const id = $button.data("id");
+              const storage = LocalDataStorage.getInstance();
+              const history = storage.getHistory();
+              const query = history.find((q: any) => q.id === id);
+              if (!query) return;
 
-            const projectKey = "dbpedia-en";
-            const generatedSummary = await generateSummaryFromAPI(
-              query.queryJson,
-              this.lang,
-              projectKey
-            );
+              // Désactiver le bouton et le griser
+              $button.prop("disabled", true);
+              $button.addClass("disabled");
 
-            if (generatedSummary) {
-              $button.siblings(".summary-natural").val(generatedSummary);
-              query.summary = generatedSummary;
-              storage.set("queryHistory", history);
+              const generatedSummary = await generateSummaryFromAPI(
+                query.queryJson,
+                this.lang,
+                getSettings().urlAPI
+              );
+
+              if (generatedSummary) {
+                $button.siblings(".summary-natural").val(generatedSummary);
+                query.summary = generatedSummary;
+                storage.set("queryHistory", history);
+              }
+
+              // Optionnel: si vous voulez réactiver le bouton après génération
+              // $button.prop("disabled", false);
+              // $button.removeClass("disabled");
             }
-          }
-        );
+          );
+        }
       },
     });
 
@@ -367,7 +379,10 @@ class HistorySection extends HTMLComponent {
       const confirmed = await this.confirmAction(
         SparnaturalHistoryI18n.labels["confirmClearHistory"]
       );
-      if (confirmed) this.clearHistory();
+      if (confirmed) {
+        LocalDataStorage.getInstance().clearHistory();
+        this.showHistory(); // refresh affichage
+      }
     });
     this.html.find("#closeHistory, .history-overlay").on("click", () => {
       this.html.find("#historyModal, .history-overlay").remove();
@@ -470,11 +485,6 @@ class HistorySection extends HTMLComponent {
     );
   }
 
-  private clearHistory() {
-    LocalDataStorage.getInstance().clearHistory();
-    this.showHistory();
-  }
-
   private getFirstVariableValue(
     variable: VariableTerm | VariableExpression
   ): string | null {
@@ -502,11 +512,11 @@ class HistorySection extends HTMLComponent {
 async function generateSummaryFromAPI(
   queryJson: any,
   lang: string = "fr",
-  projectKey: string = "default" // Ajout du projectKey avec une valeur par défaut
+  mistralApiUrl: string = getSettings().urlAPI
 ): Promise<string | null> {
   try {
     const response = await fetch(
-      `http://localhost:3000/${projectKey}/api/v1/query2text?query=${encodeURIComponent(
+      `${mistralApiUrl}query=${encodeURIComponent(
         JSON.stringify(queryJson)
       )}&lang=${lang}`,
       {

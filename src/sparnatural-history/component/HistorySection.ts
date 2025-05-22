@@ -1,19 +1,5 @@
 import "datatables.net";
-
-// Extend DataTables type definition to include 'ext'
-declare global {
-  interface JQueryDataTableJq {
-    ext: {
-      type: {
-        order: {
-          [key: string]: (data: any) => number;
-        };
-      };
-      search: Array<(settings: any, data: any[]) => boolean>;
-    };
-  }
-}
-import $, { get } from "jquery";
+import $ from "jquery";
 import LocalDataStorage from "../storage/LocalDataStorage";
 import { HTMLComponent } from "sparnatural";
 import {
@@ -22,7 +8,6 @@ import {
   VariableTerm,
   VariableExpression,
 } from "sparnatural";
-
 import type { ISparnaturalSpecification } from "sparnatural";
 import ConfirmationModal from "./ConfirmationModal";
 import { SparnaturalHistoryElement } from "../../SparnaturalHistoryElement";
@@ -84,12 +69,11 @@ class HistorySection extends HTMLComponent {
     </div>`;
     this.html.append(modalHtml);
 
-    // Extend DataTables to include the 'ext' property
     ($.fn.dataTable as any).ext.type.order["custom-fav-pre"] = (data: any) =>
       $(data).find("i").hasClass("fas") ? 1 : 0;
 
     $.fn.dataTable.ext.search.push((settings: any, data: any[]) => {
-      const isoDateStr = data[6]; // <- correction ici
+      const isoDateStr = data[6];
       const min = $("#minDate").val() as string;
       const max = $("#maxDate").val() as string;
       const date = new Date(isoDateStr);
@@ -113,7 +97,6 @@ class HistorySection extends HTMLComponent {
         const isToday = dateObj.toDateString() === now.toDateString();
         const lang = getSettings().language === "fr" ? "fr-FR" : "en-US";
         this.lang = getSettings().language;
-        console.log("lang", this.lang);
         const dateDisplay = isToday
           ? dateObj.toLocaleTimeString(lang, {
               hour: "2-digit",
@@ -124,6 +107,12 @@ class HistorySection extends HTMLComponent {
               month: "2-digit",
             });
         const dateISO = dateObj.toISOString();
+        const mistralApiUrl = getSettings().urlAPI;
+        const generateSummaryButton = mistralApiUrl
+          ? `<button class="generate-summary-btn" data-id="${entry.metadata.id}" title="Generate Summary">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </button>`
+          : "";
 
         return [
           `<button class="favorite-query" data-id="${
@@ -133,15 +122,11 @@ class HistorySection extends HTMLComponent {
           } fa-star"></i></button>`,
           entity,
           `<div class="summary-container">
-          <textarea class="summary-natural" placeholder="${
-            SparnaturalHistoryI18n.labels["SaisirResume"]
-          }">${entry.metadata.description?.[this.lang] || ""}</textarea>
-          <button class="generate-summary-btn" data-id="${
-            entry.metadata.id
-          }" title="Generate Summary">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-          </button>
-        </div>`,
+  <textarea class="summary-natural" placeholder="${
+    SparnaturalHistoryI18n.labels["SaisirResume"]
+  }">${entry.metadata.description?.[this.lang] || ""}</textarea>
+  ${generateSummaryButton}
+</div>`,
           this.formatQuerySummary(parsedQuery, this.specProvider),
           dateDisplay,
           `<div class="actions-btn hidden">
@@ -204,21 +189,88 @@ class HistorySection extends HTMLComponent {
           textarea.setAttribute("spellcheck", "false");
           textarea.setAttribute("autocorrect", "off");
           textarea.setAttribute("autocomplete", "off");
+
+          // Enable/disable the generate-summary-btn based on textarea content
+          const $textarea = $(textarea);
+          const $button = $textarea.siblings(".generate-summary-btn");
+          const isEmpty = $textarea.val().toString().trim() === "";
+          $button.prop("disabled", !isEmpty);
+          $button.toggleClass("disabled", !isEmpty);
         });
 
-        // Gestionnaire d'événements pour sauvegarder automatiquement le résumé
+        $("#queryHistoryTable tbody").on(
+          "click",
+          ".generate-summary-btn",
+          async (e) => {
+            const $button = $(e.currentTarget);
+            $button.prop("disabled", true);
+            $button.addClass("disabled");
+
+            const id = $button.data("id");
+            const storage = LocalDataStorage.getInstance();
+            const history = storage.getHistory();
+
+            // Debugging: Log the history to check its structure
+            console.log("Retrieved history:", history);
+
+            // Ensure that we are looking for the correct property
+            const query = history.find(
+              (q: SparnaturalQueryIfc) => q.metadata.id === id
+            );
+
+            if (!query) {
+              console.error("Query not found in history");
+              return;
+            }
+
+            // Debugging: Log the query to check its structure
+            console.log("Found query:", query);
+
+            // Create a copy of the query object without the metadata field
+            const { metadata, ...queryWithoutMetadata } = query;
+
+            const generatedSummary = await generateSummaryFromAPI(
+              queryWithoutMetadata,
+              this.lang,
+              getSettings().urlAPI
+            );
+
+            console.log("Generated summary:", generatedSummary);
+
+            if (generatedSummary) {
+              // Ensure generatedSummary is treated as a string
+              const summaryText =
+                typeof generatedSummary === "object"
+                  ? JSON.stringify(generatedSummary)
+                  : String(generatedSummary);
+              $button.siblings(".summary-natural").val(summaryText);
+
+              // Update the description object with the generated summary
+              if (!query.metadata.description) {
+                query.metadata.description = {};
+              }
+              query.metadata.description[this.lang] = summaryText;
+
+              storage.set("queryHistory", history);
+            }
+          }
+        );
+
         $("#queryHistoryTable tbody").on(
           "blur",
           ".summary-natural",
-          function () {
-            const $textarea = $(this);
-            const newSummary = $textarea.val(); // Récupérer le contenu du textarea
+          (event) => {
+            const $textarea = $(event.currentTarget);
+            const newSummary = $textarea.val(); // Ensure this is a string
+
+            // Log the summary to check its type and content
+            console.log("New Summary:", newSummary, typeof newSummary);
+
             const id = $textarea
               .closest("tr")
               .find(".favorite-query")
-              .data("id"); // Identifier l'entrée correspondante
+              .data("id");
 
-            // Sauvegarder dans le stockage local
             const storage = LocalDataStorage.getInstance();
             const history = storage.getHistory();
             const query = history.find(
@@ -228,9 +280,26 @@ class HistorySection extends HTMLComponent {
               if (!query.metadata.description) {
                 query.metadata.description = {};
               }
-              query.metadata.description[this.lang] = newSummary; // Mettre à jour la description
-              storage.set("queryHistory", history); // Sauvegarder dans le stockage local
+              // Ensure newSummary is treated as a string
+              const summaryText =
+                typeof newSummary === "object"
+                  ? JSON.stringify(newSummary)
+                  : String(newSummary);
+              query.metadata.description[this.lang] = summaryText;
+              storage.set("queryHistory", history);
             }
+          }
+        );
+
+        $("#queryHistoryTable tbody").on(
+          "input",
+          ".summary-natural",
+          function () {
+            const $textarea = $(this);
+            const $button = $textarea.siblings(".generate-summary-btn");
+            const isEmpty = $textarea.val().toString().trim() === "";
+            $button.prop("disabled", !isEmpty);
+            $button.toggleClass("disabled", !isEmpty);
           }
         );
 
@@ -283,37 +352,6 @@ class HistorySection extends HTMLComponent {
               )
               .catch(() => this.showToast("Échec de la copie", 4000));
           });
-
-        $("#queryHistoryTable tbody").on(
-          "click",
-          ".generate-summary-btn",
-          async (e) => {
-            const $button = $(e.currentTarget);
-            const id = $button.data("id");
-            const storage = LocalDataStorage.getInstance();
-            const history = storage.getHistory();
-            const query = history.find(
-              (q: SparnaturalQueryIfc) => q.metadata.id === id
-            );
-            if (!query) return;
-
-            const projectKey = "dbpedia-en";
-            const generatedSummary = await generateSummaryFromAPI(
-              query,
-              this.lang,
-              projectKey
-            );
-
-            if (generatedSummary) {
-              $button.siblings(".summary-natural").val(generatedSummary);
-              if (!query.metadata.description) {
-                query.metadata.description = {};
-              }
-              query.metadata.description[this.lang] = generatedSummary;
-              storage.set("queryHistory", history);
-            }
-          }
-        );
       },
     });
 
@@ -473,11 +511,11 @@ class HistorySection extends HTMLComponent {
 async function generateSummaryFromAPI(
   queryJson: any,
   lang: string = "fr",
-  projectKey: string = "default" // Ajout du projectKey avec une valeur par défaut
+  mistralApiUrl: string = getSettings().urlAPI
 ): Promise<string | null> {
   try {
     const response = await fetch(
-      `http://localhost:3000/${projectKey}/api/v1/query2text?query=${encodeURIComponent(
+      `${mistralApiUrl}query=${encodeURIComponent(
         JSON.stringify(queryJson)
       )}&lang=${lang}`,
       {

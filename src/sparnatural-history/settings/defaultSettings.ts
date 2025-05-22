@@ -2,11 +2,15 @@ import ISettings from "./ISettings";
 
 const defaultSettings: ISettings = {
   language: "en",
+  // add url for for mistral api this attribute will be optional and used for redering the button of generate
+  // if this url don't exist hide the button generate
+  urlAPI: "",
 };
 
 // the actual settings, result of merge between defaultSettings and settings passed as parameters
 let settings: ISettings = {
   language: "",
+  urlAPI: "",
 };
 export function getSettings() {
   return settings;

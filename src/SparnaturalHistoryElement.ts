@@ -45,7 +45,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["lang"];
+    return ["lang", "urlAPI"];
   }
   attributeChangedCallback(
     name: string,
@@ -56,19 +56,18 @@ export class SparnaturalHistoryElement extends HTMLElement {
       return;
     }
 
-    // prevents callback to be called on initial creation
     if (oldValue != null) {
       switch (name) {
-        case "lang": {
+        case "lang":
           getSettings().language = newValue;
           break;
-        }
-        default: {
-          throw new Error("unknown observed attribute ${name}");
-        }
+        case "urlAPI":
+          getSettings().urlAPI = newValue;
+          break;
+        default:
+          throw new Error(`unknown observed attribute ${name}`);
       }
 
-      // then display/reprint
       this.display();
     }
   }

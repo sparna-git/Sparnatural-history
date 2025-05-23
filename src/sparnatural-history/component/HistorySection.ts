@@ -516,7 +516,7 @@ async function generateSummaryFromAPI(
 ): Promise<string | null> {
   try {
     const response = await fetch(
-      `${mistralApiUrl}query=${encodeURIComponent(
+      `${mistralApiUrl}api/v1/query2text?query=${encodeURIComponent(
         JSON.stringify(queryJson)
       )}&lang=${lang}`,
       {

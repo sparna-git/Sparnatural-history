@@ -44,7 +44,7 @@
   transition: all 0.3s ease;
   margin: 2px;
   z-index: 10;
-  padding: 3px 6px;
+  //padding: 3px 6px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   animation: gradient 5s ease infinite;
 
@@ -54,7 +54,7 @@
 }
 
 .generate-summary-btn i {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 @keyframes gradient {

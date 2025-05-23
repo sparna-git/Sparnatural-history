@@ -1,8 +1,7 @@
 import { SparnaturalQueryIfc } from "sparnatural";
-class LocalDataStorage {
-  // Instance stores a reference to the Singleton
-  private static instance: any;
 
+class LocalDataStorage {
+  private static instance: any;
   privateArray = new Array();
 
   constructor() {}
@@ -10,7 +9,7 @@ class LocalDataStorage {
   get(name: any) {
     if (this.storageAvailable()) {
       const value = localStorage.getItem(name);
-      return value ? JSON.parse(value) : null; // Assurer que les objets JSON sont bien récupérés
+      return value ? JSON.parse(value) : null;
     } else {
       return this.privateArray[name] || null;
     }
@@ -18,19 +17,16 @@ class LocalDataStorage {
 
   set(name: any, value: any) {
     if (this.storageAvailable()) {
-      localStorage.setItem(name, JSON.stringify(value)); // Assurez-vous que les données sont stockées sous forme de JSON
+      localStorage.setItem(name, JSON.stringify(value));
     } else {
       this.privateArray[name] = value;
     }
   }
 
-  // Get the Singleton instance if one exists
-  // or create one if it doesn't
   static getInstance() {
     if (!LocalDataStorage.instance) {
       LocalDataStorage.instance = new LocalDataStorage();
     }
-
     return LocalDataStorage.instance;
   }
 
@@ -57,11 +53,17 @@ class LocalDataStorage {
     let history = this.getHistory();
     console.log("Avant ajout :", history);
 
-    // Vérifie si la requête existe déjà
-    const existingQuery = history.find(
-      (q: SparnaturalQueryIfc) =>
-        JSON.stringify(q) === JSON.stringify(queryJson)
-    );
+    // Créez une copie de la requête sans les métadonnées pour la comparaison
+    const { metadata, ...queryWithoutMetadata } = queryJson;
+
+    // Vérifie si la requête existe déjà (sans les métadonnées)
+    const existingQuery = history.find((q: SparnaturalQueryIfc) => {
+      const { metadata: existingMetadata, ...existingQueryWithoutMetadata } = q;
+      return (
+        JSON.stringify(existingQueryWithoutMetadata) ===
+        JSON.stringify(queryWithoutMetadata)
+      );
+    });
 
     if (!existingQuery) {
       history.push(queryJson);
@@ -95,7 +97,7 @@ class LocalDataStorage {
 
   getHistory(): SparnaturalQueryIfc[] {
     let history = localStorage.getItem("queryHistory");
-    return history ? JSON.parse(history) : []; // Toujours un tableau
+    return history ? JSON.parse(history) : [];
   }
 
   deleteQuery(id: string): void {
@@ -111,6 +113,7 @@ class LocalDataStorage {
     );
     this.set("queryHistory", history);
   }
+
   private storageAvailable(): boolean {
     try {
       let storage = window.localStorage;

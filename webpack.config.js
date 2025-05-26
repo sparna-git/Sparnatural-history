@@ -6,6 +6,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const DashboardPlugin = require("webpack-dashboard/plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const FileManagerPlugin = require("filemanager-webpack-plugin");
+const StatoscopeWebpackPlugin = require('@statoscope/webpack-plugin').default;
 
 const BundleAnalyzerPlugin =
   require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
@@ -117,6 +118,9 @@ module.exports = {
         },
       ],
     }),
+
+    // uncomment to analyze the package size
+    new StatoscopeWebpackPlugin(),
 
     // so that JQuery is automatically inserted
     new webpack.ProvidePlugin({

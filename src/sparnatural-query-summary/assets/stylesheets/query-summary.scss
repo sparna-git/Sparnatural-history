@@ -38,8 +38,8 @@
                 &>.sumSujet {
                     display: inline-block;
                     padding-right: 2px;
-                    &.transparentitem {
-                        opacity: 0;
+                    &.grayStartLabel {
+                        color: var(--silver-color-main);
                     }
                 }
                 &>.sumObjet {

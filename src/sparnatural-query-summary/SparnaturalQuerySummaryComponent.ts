@@ -13,6 +13,7 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
     queryJson: ISparJson;
     language: string;
     querySummary: string;
+    variableDisplayed: string[] = [];
 
     static ICON_EYE = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
   
@@ -56,10 +57,18 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                 let displaystartLabel = "" ;
                 console.log(branch) ;
                 if ((variables.includes(branch.line.s)) && (isRoot)) {
-                    sSelceted = SparnaturalQuerySummaryComponent.ICON_EYE ;
+                    if(!this.variableDisplayed.includes(branch.line.s)){
+                        this.variableDisplayed.push(branch.line.s);
+                        sSelceted = SparnaturalQuerySummaryComponent.ICON_EYE ;
+                    }
                 }
                 if (variables.includes(branch.line.o)) {
-                    oSelceted = SparnaturalQuerySummaryComponent.ICON_EYE ;
+                    
+                    if(!this.variableDisplayed.includes(branch.line.o)){
+                        this.variableDisplayed.push(branch.line.o);
+                        oSelceted = SparnaturalQuerySummaryComponent.ICON_EYE ;
+                    }
+                    
                 }
                 const startLabel =
                     branch.line.sType &&
@@ -81,10 +90,13 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                 if (branch?.notExists === true) {
                     startOption += `<span class='startOption notExist'>${SparnaturalQuerySummaryI18n.labels.notexist}</span> `;
                 }
+                if (!isRoot) {
+                    displaystartLabel = "grayStartLabel" ;
+                }
 
                 if (nbChildren > 1) {
                       //startLogic = `<span class='logic And'>${SparnaturalQuerySummaryI18n.labels.and}</span>`;
-                      displaystartLabel = "transparentitem"
+                      displaystartLabel = "grayStartLabel" ;
                     
                 } else {
                     if (!isRoot) {
@@ -117,7 +129,7 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                     selectedValues = `<div class='selectedValues'>${labelSelectedValues}${selectedValues}</div>`;
                 }
                 if (nbChildren == 1) {
-                    whereStartLabel = `${startOption} <strong class="sumSujet">${startLabel}${sSelceted}</strong> `;
+                    whereStartLabel = `${startOption} <strong class="sumSujet ${displaystartLabel}">${startLabel}${sSelceted}</strong> `;
                 } else {
                     whereStartLabel = `<strong class="sumSujet ${displaystartLabel}">${startLabel}${sSelceted}</strong> ${startOption} `;
                 }
@@ -145,6 +157,7 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
     
         let allVarible: any[] = queryJson.variables ;
         const reformattedArray = allVarible.map(({ termType, value }) => ( value ));
+        console.log(queryJson);
 
         summary = '<div class="SparnturalQuerySummaryComponent query-summary SparnaturalTheme">'+this.formatChildsItems(queryJson.branches, reformattedArray)+'</div>';
     

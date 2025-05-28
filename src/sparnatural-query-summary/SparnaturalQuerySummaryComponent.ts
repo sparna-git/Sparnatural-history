@@ -131,7 +131,7 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
                 if (nbChildren == 1) {
                     whereStartLabel = `${startOption} <strong class="sumSujet ${displaystartLabel}">${startLabel}${sSelceted}</strong> `;
                 } else {
-                    whereStartLabel = `<strong class="sumSujet ${displaystartLabel}">${startLabel}${sSelceted}</strong> ${startOption} `;
+                    whereStartLabel = `<strong class="sumSujet ${displaystartLabel}">${startLabel}${sSelceted}</strong>${startOption} `;
                 }
 
                 let htmlLI ="" ;

@@ -1,3 +1,8 @@
 {
-    "optionnal": "Optionnal"
+        "and": "et",
+        "where": "où",
+        "notexist": "Negatif",
+        "optionnal": "Optionnel",
+        "any": "Tous·tes",
+        "values": "Avec les valeurs"
 }

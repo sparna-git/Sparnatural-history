@@ -1,14 +1,14 @@
 import "datatables.net";
 import $, { get } from "jquery";
 import LocalDataStorage from "../storage/LocalDataStorage";
-import HTMLComponent from "sparnatural/src/sparnatural/components/HtmlComponent";
+import { HTMLComponent } from "sparnatural";
 import {
   Branch,
-  ISparJson,
-  VariableExpression,
+  SparnaturalQueryIfc,
   VariableTerm,
-} from "sparnatural/src/sparnatural/generators/json/ISparJson";
-import ISparnaturalSpecification from "sparnatural/src/sparnatural/spec-providers/ISparnaturalSpecification";
+  VariableExpression,
+} from "sparnatural";
+import type { ISparnaturalSpecification } from "sparnatural";
 import ConfirmationModal from "./ConfirmationModal";
 import { SparnaturalHistoryElement } from "../../SparnaturalHistoryElement";
 import { SparnaturalHistoryI18n } from "../settings/SparnaturalHistoryI18n";
@@ -58,22 +58,22 @@ class HistorySection extends HTMLComponent {
     this.html.addClass("history-modal-open");
 
     const modalHtml = `
-      <div id="historyModal" class="history-modal">
-        <div class="table-container">
-          <table id="queryHistoryTable" class="display"><tbody></tbody></table>
-        </div>
-        <div class="history-actions">
-          <button id="resetHistory"><strong>${SparnaturalHistoryI18n.labels["clearHistory"]}</strong><i class="fas fa-eraser"></i></button>
-          <button id="closeHistory" class="btn-red"><strong>${SparnaturalHistoryI18n.labels["close"]}</strong><i class="fas fa-times"></i></button>
-        </div>
-      </div>`;
+    <div id="historyModal" class="history-modal">
+      <div class="table-container">
+        <table id="queryHistoryTable" class="display"><tbody></tbody></table>
+      </div>
+      <div class="history-actions">
+        <button id="resetHistory"><strong>${SparnaturalHistoryI18n.labels["clearHistory"]}</strong><i class="fas fa-eraser"></i></button>
+        <button id="closeHistory" class="btn-red"><strong>${SparnaturalHistoryI18n.labels["close"]}</strong><i class="fas fa-times"></i></button>
+      </div>
+    </div>`;
     this.html.append(modalHtml);
 
-    $.fn.dataTable.ext.type.order["custom-fav-pre"] = (data: any) =>
+    ($.fn.dataTable as any).ext.type.order["custom-fav-pre"] = (data: any) =>
       $(data).find("i").hasClass("fas") ? 1 : 0;
 
     $.fn.dataTable.ext.search.push((settings: any, data: any[]) => {
-      const isoDateStr = data[6]; // <- correction ici
+      const isoDateStr = data[6];
       const min = $("#minDate").val() as string;
       const max = $("#maxDate").val() as string;
       const date = new Date(isoDateStr);
@@ -81,13 +81,10 @@ class HistorySection extends HTMLComponent {
     });
 
     const tableData = history
-      .map((entry) => {
+      .map((entry: SparnaturalQueryIfc) => {
         let parsedQuery;
         try {
-          parsedQuery =
-            typeof entry.queryJson === "string"
-              ? JSON.parse(entry.queryJson)
-              : entry.queryJson;
+          parsedQuery = typeof entry === "string" ? JSON.parse(entry) : entry;
         } catch {
           return null;
         }
@@ -95,12 +92,10 @@ class HistorySection extends HTMLComponent {
         const entityType = this.getEntityType(parsedQuery);
         const entity = this.getEntityLabel(entityType);
 
-        const dateObj = new Date(entry.date);
+        const dateObj = new Date(entry.metadata.date);
         const now = new Date();
         const isToday = dateObj.toDateString() === now.toDateString();
         const lang = getSettings().language === "fr" ? "fr-FR" : "en-US";
-        this.lang = getSettings().language;
-        console.log("lang", this.lang);
         const dateDisplay = isToday
           ? dateObj.toLocaleTimeString(lang, {
               hour: "2-digit",
@@ -111,33 +106,31 @@ class HistorySection extends HTMLComponent {
               month: "2-digit",
             });
         const dateISO = dateObj.toISOString();
-        const mistralApiUrl = getSettings().urlAPI;
-        const generateSummaryButton = mistralApiUrl
-          ? `<button class="generate-summary-btn" data-id="${entry.id}" title="Generate Summary">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-          </button>`
-          : "";
 
         return [
           `<button class="favorite-query" data-id="${
-            entry.id
+            entry.metadata.id
           }"><i class="favorite-icon ${
-            entry.isFavorite ? "fas" : "far"
+            entry.metadata.isFavorite ? "fas" : "far"
           } fa-star"></i></button>`,
           entity,
           `<div class="summary-container">
-          <textarea class="summary-natural" placeholder="${
-            SparnaturalHistoryI18n.labels["SaisirResume"]
-          }">${entry.summary || ""}</textarea>
-          ${generateSummaryButton}
-        </div>`,
+    <textarea class="summary-natural" placeholder="${
+      SparnaturalHistoryI18n.labels["SaisirResume"]
+    }">${entry.summary || ""}</textarea>
+    <button class="generate-summary-btn" data-id="${
+      entry.id
+    }" title="Generate Summary">
+      <i class="fas fa-magic"></i>
+    </button>
+  </div>`,
           this.formatQuerySummary(parsedQuery, this.specProvider),
           dateDisplay,
           `<div class="actions-btn hidden">
-    <button class="load-query btn-orange" data-id="${entry.id}" title="${SparnaturalHistoryI18n.labels["loadQuery"]}"><i class="fas fa-sync"></i></button>
-    <button class="save-query btn-green" data-id="${entry.id}" title="${SparnaturalHistoryI18n.labels["copyQuery"]}"><i class="fas fa-copy"></i></button>
-    <button class="delete-query btn-red" data-id="${entry.id}"><i class="fas fa-trash"></i></button>
-  </div>`,
+          <button class="load-query btn-orange" data-id="${entry.metadata.id}" title="${SparnaturalHistoryI18n.labels["loadQuery"]}"><i class="fas fa-sync"></i></button>
+          <button class="save-query btn-green" data-id="${entry.metadata.id}" title="${SparnaturalHistoryI18n.labels["copyQuery"]}"><i class="fas fa-copy"></i></button>
+          <button class="delete-query btn-red" data-id="${entry.metadata.id}"><i class="fas fa-trash"></i></button>
+        </div>`,
           dateISO,
         ];
       })
@@ -193,33 +186,53 @@ class HistorySection extends HTMLComponent {
           textarea.setAttribute("spellcheck", "false");
           textarea.setAttribute("autocorrect", "off");
           textarea.setAttribute("autocomplete", "off");
-          const $textarea = $(textarea);
-          const $button = $textarea.siblings(".generate-summary-btn");
-          const isEmpty = $textarea.val().toString().trim() === "";
-          $button.prop("disabled", !isEmpty);
-          $button.toggleClass("disabled", !isEmpty);
         });
 
         // Gestionnaire d'événements pour sauvegarder automatiquement le résumé
         $("#queryHistoryTable tbody").on(
           "blur",
           ".summary-natural",
-          function () {
-            const $textarea = $(this);
-            const newSummary = $textarea.val(); // Récupérer le contenu du textarea
+          (event) => {
+            const $textarea = $(event.currentTarget);
+            const newSummary = $textarea.val(); // Ensure this is a string
+
+            // Log the summary to check its type and content
+            console.log("New Summary:", newSummary, typeof newSummary);
+
             const id = $textarea
               .closest("tr")
               .find(".favorite-query")
-              .data("id"); // Identifier l'entrée correspondante
+              .data("id");
 
-            // Sauvegarder dans le stockage local
             const storage = LocalDataStorage.getInstance();
             const history = storage.getHistory();
-            const query = history.find((q: any) => q.id === id);
+            const query = history.find(
+              (q: SparnaturalQueryIfc) => q.metadata.id === id
+            );
             if (query) {
-              query.summary = newSummary; // Mettre à jour le résumé
-              storage.set("queryHistory", history); // Sauvegarder dans le stockage local
+              if (!query.metadata.description) {
+                query.metadata.description = {};
+              }
+              // Ensure newSummary is treated as a string
+              const summaryText =
+                typeof newSummary === "object"
+                  ? JSON.stringify(newSummary)
+                  : String(newSummary);
+              query.metadata.description[this.lang] = summaryText;
+              storage.set("queryHistory", history);
             }
+          }
+        );
+
+        $("#queryHistoryTable tbody").on(
+          "input",
+          ".summary-natural",
+          function () {
+            const $textarea = $(this);
+            const $button = $textarea.siblings(".generate-summary-btn");
+            const isEmpty = $textarea.val().toString().trim() === "";
+            $button.prop("disabled", !isEmpty);
+            $button.toggleClass("disabled", !isEmpty);
           }
         );
 
@@ -312,51 +325,51 @@ class HistorySection extends HTMLComponent {
           .off("click")
           .on("click", (e) => {
             const id = $(e.currentTarget).data("id");
-            const query = history.find((q) => q.id === id);
+            const query = history.find(
+              (q: SparnaturalQueryIfc) => q.metadata.id === id
+            );
             if (!query) return;
             navigator.clipboard
-              .writeText(JSON.stringify(query.queryJson, null, 2))
+              .writeText(JSON.stringify(query, null, 2))
               .then(() =>
                 this.showToast(SparnaturalHistoryI18n.labels["MessageExport"])
               )
               .catch(() => this.showToast("Échec de la copie", 4000));
           });
 
-        // Ajoutez un gestionnaire d'événements pour le bouton "Generate Summary" seulement si l'URL est disponible
-        if (getSettings().urlAPI) {
-          $("#queryHistoryTable tbody").on(
-            "click",
-            ".generate-summary-btn",
-            async (e) => {
-              const $button = $(e.currentTarget);
-              const id = $button.data("id");
-              const storage = LocalDataStorage.getInstance();
-              const history = storage.getHistory();
-              const query = history.find((q: any) => q.id === id);
-              if (!query) return;
+        $("#queryHistoryTable tbody").on(
+          "click",
+          ".generate-summary-btn",
+          async function () {
+            const $button = $(this);
+            const id = $button.data("id"); // Récupérer l'ID de la ligne
+            const storage = LocalDataStorage.getInstance();
+            const history = storage.getHistory();
+            const query = history.find((q: any) => q.id === id);
 
-              // Désactiver le bouton et le griser
-              $button.prop("disabled", true);
-              $button.addClass("disabled");
-
-              const generatedSummary = await generateSummaryFromAPI(
-                query.queryJson,
-                this.lang,
-                getSettings().urlAPI
-              );
-
-              if (generatedSummary) {
-                $button.siblings(".summary-natural").val(generatedSummary);
-                query.summary = generatedSummary;
-                storage.set("queryHistory", history);
-              }
-
-              // Optionnel: si vous voulez réactiver le bouton après génération
-              // $button.prop("disabled", false);
-              // $button.removeClass("disabled");
+            if (!query) {
+              console.error("Query not found for ID:", id);
+              return;
             }
-          );
-        }
+            const projectKey = "dbpedia-en"; // Remplacez par le projectKey approprié
+
+            // Appeler la méthode pour générer le résumé
+            const generatedSummary = await generateSummaryFromAPI(
+              query.queryJson,
+              "en",
+              projectKey
+            );
+
+            if (generatedSummary) {
+              // Mettre à jour le champ <textarea> avec le résumé généré
+              $button.siblings(".summary-natural").val(generatedSummary);
+
+              // Sauvegarder le résumé généré dans le stockage local
+              query.summary = generatedSummary;
+              storage.set("queryHistory", history);
+            }
+          }
+        );
       },
     });
 
@@ -364,13 +377,13 @@ class HistorySection extends HTMLComponent {
       .find("#queryHistoryTable_wrapper .dt-layout-row")
       .first();
     layoutRow.append(`
-      <div class="dt-layout-cell" style="flex: 0 0 auto; display: flex; align-items: center; gap: 10px;">
-        <div style="width: 10px;"></div>
-        <button id="openDateFilter" class="btn-yellow">
-          <i class="fas fa-calendar-alt"></i>
-        </button>
-      </div>
-    `);
+    <div class="dt-layout-cell" style="flex: 0 0 auto; display: flex; align-items: center; gap: 10px;">
+      <div style="width: 10px;"></div>
+      <button id="openDateFilter" class="btn-yellow">
+        <i class="fas fa-calendar-alt"></i>
+      </button>
+    </div>
+  `);
 
     this.html
       .find("#openDateFilter")
@@ -409,18 +422,16 @@ class HistorySection extends HTMLComponent {
   private loadQuery(event: JQuery.ClickEvent) {
     const id = $(event.currentTarget).data("id");
     const storage = LocalDataStorage.getInstance();
-    const query = storage.getHistory().find((q: { id: any }) => q.id === id);
+    const query = storage
+      .getHistory()
+      .find((q: SparnaturalQueryIfc) => q.metadata.id === id);
     if (!query) return;
 
-    const parsed =
-      typeof query.queryJson === "string"
-        ? JSON.parse(query.queryJson)
-        : query.queryJson;
     const historyElement = document.querySelector(
       "sparnatural-history"
     ) as SparnaturalHistoryElement;
     if (historyElement) {
-      historyElement.triggerLoadQueryEvent(parsed);
+      historyElement.triggerLoadQueryEvent(query);
       $("#historyModal, .history-overlay").remove();
       $("body").removeClass("history-modal-open");
     }
@@ -430,10 +441,12 @@ class HistorySection extends HTMLComponent {
     const id = $(event.currentTarget).data("id");
     const storage = LocalDataStorage.getInstance();
     const history = storage.getHistory();
-    const query = history.find((q: any) => q.id === id);
+    const query = history.find(
+      (q: SparnaturalQueryIfc) => q.metadata.id === id
+    );
     if (!query) return;
 
-    query.isFavorite = !query.isFavorite;
+    query.metadata.isFavorite = !query.metadata.isFavorite;
     storage.set("queryHistory", history);
     this.initializeFavorites();
   }
@@ -444,12 +457,14 @@ class HistorySection extends HTMLComponent {
 
     $(".favorite-query").each(function () {
       const id = $(this).data("id");
-      const query = history.find((q: { id: any }) => q.id === id);
+      const query = history.find(
+        (q: SparnaturalQueryIfc) => q.metadata.id === id
+      );
       const icon = $(this).find("i");
       icon
         .removeClass("fas fa-star far fa-star")
-        .addClass(query?.isFavorite ? "fas fa-star" : "far fa-star")
-        .css("color", query?.isFavorite ? "#ffcc00" : "#b5b5b5");
+        .addClass(query?.metadata.isFavorite ? "fas fa-star" : "far fa-star")
+        .css("color", query?.metadata.isFavorite ? "#ffcc00" : "#b5b5b5");
     });
   }
 
@@ -467,7 +482,7 @@ class HistorySection extends HTMLComponent {
     uri ? uri.substring(uri.lastIndexOf("/") + 1) : "Inconnu";
 
   private formatQuerySummary(
-    queryJson: ISparJson,
+    queryJson: SparnaturalQueryIfc,
     specProvider?: ISparnaturalSpecification
   ): string {
     const summary = new SparnaturalQuerySummaryComponent(
@@ -494,7 +509,7 @@ class HistorySection extends HTMLComponent {
     return null;
   }
 
-  private getEntityType(queryJson: ISparJson): string {
+  private getEntityType(queryJson: SparnaturalQueryIfc): string {
     if (!queryJson.variables?.length) return "Inconnu";
     const firstVar = this.getFirstVariableValue(queryJson.variables[0]);
     const findMatch = (b: Branch) => b.line.s === firstVar;
@@ -516,7 +531,7 @@ async function generateSummaryFromAPI(
 ): Promise<string | null> {
   try {
     const response = await fetch(
-      `${mistralApiUrl}api/v1/query2text?query=${encodeURIComponent(
+      `http://localhost:3000/${projectKey}/api/v1/query2text?query=${encodeURIComponent(
         JSON.stringify(queryJson)
       )}&lang=${lang}`,
       {

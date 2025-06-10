@@ -1,7 +1,7 @@
-class LocalDataStorage {
-  // Instance stores a reference to the Singleton
-  private static instance: any;
+import { SparnaturalQueryIfc } from "sparnatural";
 
+class LocalDataStorage {
+  private static instance: any;
   privateArray = new Array();
 
   constructor() {}
@@ -9,7 +9,7 @@ class LocalDataStorage {
   get(name: any) {
     if (this.storageAvailable()) {
       const value = localStorage.getItem(name);
-      return value ? JSON.parse(value) : null; // Assurer que les objets JSON sont bien récupérés
+      return value ? JSON.parse(value) : null;
     } else {
       return this.privateArray[name] || null;
     }
@@ -17,48 +17,63 @@ class LocalDataStorage {
 
   set(name: any, value: any) {
     if (this.storageAvailable()) {
-      localStorage.setItem(name, JSON.stringify(value)); // Assurez-vous que les données sont stockées sous forme de JSON
+      localStorage.setItem(name, JSON.stringify(value));
     } else {
       this.privateArray[name] = value;
     }
   }
 
-  // Get the Singleton instance if one exists
-  // or create one if it doesn't
   static getInstance() {
     if (!LocalDataStorage.instance) {
       LocalDataStorage.instance = new LocalDataStorage();
     }
-
     return LocalDataStorage.instance;
   }
 
-  saveQuery(queryJson: any): void {
+  saveQuery(queryJson: SparnaturalQueryIfc, lang: string = "fr"): void {
     if (!queryJson) {
       console.error("Impossible de sauvegarder une requête vide !");
       return;
     }
 
+    // Ajoutez les métadonnées à la requête
+    if (!queryJson.metadata) {
+      queryJson.metadata = {};
+    }
+    queryJson.metadata.id = crypto.randomUUID();
+    queryJson.metadata.date = new Date().toISOString();
+    queryJson.metadata.isFavorite = false;
+
+    // Ajoutez le résumé sous le nom `description` avec la langue comme clé
+    if (!queryJson.metadata.description) {
+      queryJson.metadata.description = {};
+    }
+    queryJson.metadata.description[lang] = "";
+
     let history = this.getHistory();
     console.log("Avant ajout :", history);
 
-    // Vérifie si la requête existe déjà
-    const existingQuery = history.find(
-      (q) => JSON.stringify(q.queryJson) === JSON.stringify(queryJson)
-    );
+    // Créez une copie de la requête sans les métadonnées pour la comparaison
+    const { metadata, ...queryWithoutMetadata } = queryJson;
+
+    // Vérifie si la requête existe déjà (sans les métadonnées)
+    const existingQuery = history.find((q: SparnaturalQueryIfc) => {
+      const { metadata: existingMetadata, ...existingQueryWithoutMetadata } = q;
+      return (
+        JSON.stringify(existingQueryWithoutMetadata) ===
+        JSON.stringify(queryWithoutMetadata)
+      );
+    });
 
     if (!existingQuery) {
-      history.push({
-        id: crypto.randomUUID(),
-        queryJson,
-        date: new Date().toISOString(),
-        isFavorite: false,
-      });
+      history.push(queryJson);
     }
 
     // Trie par date (plus récente en haut)
     history.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a: SparnaturalQueryIfc, b: SparnaturalQueryIfc) =>
+        new Date(b.metadata.date).getTime() -
+        new Date(a.metadata.date).getTime()
     );
 
     // Si on dépasse 200, on supprime les plus anciennes non-favorites
@@ -66,7 +81,7 @@ class LocalDataStorage {
       const oldestNonFavoriteIndex = history
         .map((entry, index) => ({ ...entry, index }))
         .reverse() // du plus ancien au plus récent
-        .find((entry) => !entry.isFavorite)?.index;
+        .find((entry) => !entry.metadata.isFavorite)?.index;
 
       if (oldestNonFavoriteIndex !== undefined) {
         history.splice(oldestNonFavoriteIndex, 1);
@@ -80,18 +95,22 @@ class LocalDataStorage {
     console.log("Après ajout :", this.getHistory());
   }
 
-  getHistory(): any[] {
+  getHistory(): SparnaturalQueryIfc[] {
     let history = localStorage.getItem("queryHistory");
-    return history ? JSON.parse(history) : []; // Toujours un tableau
+    return history ? JSON.parse(history) : [];
   }
 
   deleteQuery(id: string): void {
-    let history = this.getHistory().filter((entry) => entry.id !== id);
+    let history = this.getHistory().filter(
+      (entry: SparnaturalQueryIfc) => entry.metadata.id !== id
+    );
     this.set("queryHistory", history);
   }
 
   clearHistory(): void {
-    let history = this.getHistory().filter((entry) => entry.isFavorite);
+    let history = this.getHistory().filter(
+      (entry: SparnaturalQueryIfc) => entry.metadata.isFavorite
+    );
     this.set("queryHistory", history);
   }
 

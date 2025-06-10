@@ -1,8 +1,8 @@
-import { ISparJson } from "sparnatural/src/sparnatural/generators/json/ISparJson";
+import { SparnaturalQueryIfc } from "sparnatural";
 
 export interface QueryHistory {
   date: string;
   id: string;
   isFavorite: boolean;
-  queryJson: ISparJson;
+  queryJson: SparnaturalQueryIfc;
 }

@@ -18,6 +18,7 @@ class DateFilterModal {
             <input type="date" id="minDate" />
             <label for="maxDate">${SparnaturalHistoryI18n.labels["to"]}</label>
             <input type="date" id="maxDate" />
+            <div id="dateFilterError" style="color:red;display:none;margin-top:5px;"></div>
           </div>
           <div class="modal-buttons">
             <button id="applyDateFilter" class="btn-clear">
@@ -35,10 +36,35 @@ class DateFilterModal {
       this.container.append(this.modalElement);
     }
 
+    // Contrôle : la date de début ne peut pas être après la date de fin
+    this.modalElement.on("change", "#minDate, #maxDate", () => {
+      const minDate = ($("#minDate").val() as string) || "";
+      const maxDate = ($("#maxDate").val() as string) || "";
+      const errorDiv = $("#dateFilterError");
+
+      if (minDate && maxDate && minDate > maxDate) {
+        errorDiv.text(
+          SparnaturalHistoryI18n.labels["dateFilterError"] ||
+            "La date de début doit être antérieure à la date de fin."
+        );
+        errorDiv.show();
+        $("#applyDateFilter").prop("disabled", true);
+      } else {
+        errorDiv.hide();
+        $("#applyDateFilter").prop("disabled", false);
+      }
+    });
+
+    // Contrôle : impossible de sélectionner une date future
+    const today = new Date().toISOString().split("T")[0];
+    this.modalElement.find("#minDate, #maxDate").attr("max", today);
+
     // Bouton "Clear"
     $("#applyDateFilter").on("click", () => {
       $("#minDate").val("");
       $("#maxDate").val("");
+      $("#dateFilterError").hide();
+      $("#applyDateFilter").prop("disabled", false);
       $("#queryHistoryTable").DataTable().draw();
     });
 

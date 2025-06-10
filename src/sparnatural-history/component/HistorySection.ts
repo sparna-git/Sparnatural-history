@@ -1,5 +1,5 @@
 import "datatables.net";
-import $, { get } from "jquery";
+import $ from "jquery";
 import LocalDataStorage from "../storage/LocalDataStorage";
 import { HTMLComponent } from "sparnatural";
 import {
@@ -96,6 +96,7 @@ class HistorySection extends HTMLComponent {
         const now = new Date();
         const isToday = dateObj.toDateString() === now.toDateString();
         const lang = getSettings().language === "fr" ? "fr-FR" : "en-US";
+        this.lang = getSettings().language;
         const dateDisplay = isToday
           ? dateObj.toLocaleTimeString(lang, {
               hour: "2-digit",
@@ -106,6 +107,12 @@ class HistorySection extends HTMLComponent {
               month: "2-digit",
             });
         const dateISO = dateObj.toISOString();
+        const mistralApiUrl = getSettings().urlAPI;
+        const generateSummaryButton = mistralApiUrl
+          ? `<button class="generate-summary-btn" data-id="${entry.metadata.id}" title="Generate Summary">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </button>`
+          : "";
 
         return [
           `<button class="favorite-query" data-id="${
@@ -115,15 +122,11 @@ class HistorySection extends HTMLComponent {
           } fa-star"></i></button>`,
           entity,
           `<div class="summary-container">
-    <textarea class="summary-natural" placeholder="${
-      SparnaturalHistoryI18n.labels["SaisirResume"]
-    }">${entry.summary || ""}</textarea>
-    <button class="generate-summary-btn" data-id="${
-      entry.id
-    }" title="Generate Summary">
-      <i class="fas fa-magic"></i>
-    </button>
-  </div>`,
+  <textarea class="summary-natural" placeholder="${
+    SparnaturalHistoryI18n.labels["SaisirResume"]
+  }">${entry.metadata.description?.[this.lang] || ""}</textarea>
+  ${generateSummaryButton}
+</div>`,
           this.formatQuerySummary(parsedQuery, this.specProvider),
           dateDisplay,
           `<div class="actions-btn hidden">
@@ -186,9 +189,75 @@ class HistorySection extends HTMLComponent {
           textarea.setAttribute("spellcheck", "false");
           textarea.setAttribute("autocorrect", "off");
           textarea.setAttribute("autocomplete", "off");
+
+          // Enable/disable the generate-summary-btn based on textarea content
+          const $textarea = $(textarea);
+          const $button = $textarea.siblings(".generate-summary-btn");
+          const isEmpty = $textarea.val().toString().trim() === "";
+          $button.prop("disabled", !isEmpty);
+          $button.toggleClass("disabled", !isEmpty);
         });
 
-        // Gestionnaire d'événements pour sauvegarder automatiquement le résumé
+        $("#queryHistoryTable tbody").on(
+          "click",
+          ".generate-summary-btn",
+          async (e) => {
+            const $button = $(e.currentTarget);
+            $button.prop("disabled", true);
+            $button.addClass("disabled");
+
+            const id = $button.data("id");
+            const storage = LocalDataStorage.getInstance();
+            const history = storage.getHistory();
+
+            // Debugging: Log the history to check its structure
+            console.log("Retrieved history:", history);
+
+            // Ensure that we are looking for the correct property
+            const query = history.find(
+              (q: SparnaturalQueryIfc) => q.metadata.id === id
+            );
+
+            if (!query) {
+              console.error("Query not found in history");
+              return;
+            }
+
+            // Debugging: Log the query to check its structure
+            console.log("Found query:", query);
+
+            // Create a copy of the query object without the metadata field
+            const { metadata, ...queryWithoutMetadata } = query;
+
+            console.log("queryWithoutMetadata:", queryWithoutMetadata);
+
+            const generatedSummary = await generateSummaryFromAPI(
+              queryWithoutMetadata,
+              this.lang,
+              getSettings().urlAPI
+            );
+
+            console.log("Generated summary:", generatedSummary);
+
+            if (generatedSummary) {
+              // Ensure generatedSummary is treated as a string
+              const summaryText =
+                typeof generatedSummary === "object"
+                  ? JSON.stringify(generatedSummary)
+                  : String(generatedSummary);
+              $button.siblings(".summary-natural").val(summaryText);
+
+              // Update the description object with the generated summary
+              if (!query.metadata.description) {
+                query.metadata.description = {};
+              }
+              query.metadata.description[this.lang] = summaryText;
+
+              storage.set("queryHistory", history);
+            }
+          }
+        );
+
         $("#queryHistoryTable tbody").on(
           "blur",
           ".summary-natural",
@@ -233,57 +302,6 @@ class HistorySection extends HTMLComponent {
             const isEmpty = $textarea.val().toString().trim() === "";
             $button.prop("disabled", !isEmpty);
             $button.toggleClass("disabled", !isEmpty);
-          }
-        );
-
-        // Empêche la génération si le champ n'est pas vide
-        $("#queryHistoryTable tbody").on(
-          "input",
-          ".summary-natural",
-          function () {
-            const $textarea = $(this);
-            const $button = $textarea.siblings(".generate-summary-btn");
-            const isEmpty = $textarea.val().toString().trim() === "";
-
-            // Activer ou désactiver le bouton selon que le champ est vide
-            $button.prop("disabled", !isEmpty);
-
-            // Optionnel : ajouter un style visuel pour le bouton désactivé
-            $button.toggleClass("disabled", !isEmpty);
-          }
-        );
-
-        $("#queryHistoryTable tbody").on(
-          "click",
-          ".generate-summary-btn",
-          async (e) => {
-            const $button = $(e.currentTarget);
-            // désactiver le bouton et le griser tout de suite
-            $button.prop("disabled", true);
-            $button.addClass("disabled");
-
-            const id = $button.data("id");
-            const storage = LocalDataStorage.getInstance();
-            const history = storage.getHistory();
-            const query = history.find((q: any) => q.id === id);
-            if (!query) return;
-
-            const generatedSummary = await generateSummaryFromAPI(
-              query.queryJson,
-              this.lang,
-              getSettings().urlAPI
-            );
-            console.log("API mistral", getSettings().urlAPI);
-
-            if (generatedSummary) {
-              $button.siblings(".summary-natural").val(generatedSummary);
-              query.summary = generatedSummary;
-              storage.set("queryHistory", history);
-            }
-
-            // Optionnel: si tu veux réactiver le bouton après génération
-            // $button.prop("disabled", false);
-            // $button.removeClass("disabled");
           }
         );
 
@@ -336,40 +354,6 @@ class HistorySection extends HTMLComponent {
               )
               .catch(() => this.showToast("Échec de la copie", 4000));
           });
-
-        $("#queryHistoryTable tbody").on(
-          "click",
-          ".generate-summary-btn",
-          async function () {
-            const $button = $(this);
-            const id = $button.data("id"); // Récupérer l'ID de la ligne
-            const storage = LocalDataStorage.getInstance();
-            const history = storage.getHistory();
-            const query = history.find((q: any) => q.id === id);
-
-            if (!query) {
-              console.error("Query not found for ID:", id);
-              return;
-            }
-            const projectKey = "dbpedia-en"; // Remplacez par le projectKey approprié
-
-            // Appeler la méthode pour générer le résumé
-            const generatedSummary = await generateSummaryFromAPI(
-              query.queryJson,
-              "en",
-              projectKey
-            );
-
-            if (generatedSummary) {
-              // Mettre à jour le champ <textarea> avec le résumé généré
-              $button.siblings(".summary-natural").val(generatedSummary);
-
-              // Sauvegarder le résumé généré dans le stockage local
-              query.summary = generatedSummary;
-              storage.set("queryHistory", history);
-            }
-          }
-        );
       },
     });
 
@@ -392,10 +376,7 @@ class HistorySection extends HTMLComponent {
       const confirmed = await this.confirmAction(
         SparnaturalHistoryI18n.labels["confirmClearHistory"]
       );
-      if (confirmed) {
-        LocalDataStorage.getInstance().clearHistory();
-        this.showHistory(); // refresh affichage
-      }
+      if (confirmed) this.clearHistory();
     });
     this.html.find("#closeHistory, .history-overlay").on("click", () => {
       this.html.find("#historyModal, .history-overlay").remove();
@@ -500,6 +481,11 @@ class HistorySection extends HTMLComponent {
     );
   }
 
+  private clearHistory() {
+    LocalDataStorage.getInstance().clearHistory();
+    this.showHistory();
+  }
+
   private getFirstVariableValue(
     variable: VariableTerm | VariableExpression
   ): string | null {
@@ -531,7 +517,7 @@ async function generateSummaryFromAPI(
 ): Promise<string | null> {
   try {
     const response = await fetch(
-      `http://localhost:3000/${projectKey}/api/v1/query2text?query=${encodeURIComponent(
+      `${mistralApiUrl}api/v1/query2text?query=${encodeURIComponent(
         JSON.stringify(queryJson)
       )}&lang=${lang}`,
       {

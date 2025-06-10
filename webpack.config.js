@@ -115,7 +115,7 @@ module.exports = {
     }),
 
     // uncomment to analyze the package size
-    new StatoscopeWebpackPlugin(),
+    //new StatoscopeWebpackPlugin(),
 
     new webpack.ProvidePlugin({
       $: "jquery",

@@ -475,7 +475,7 @@ class HistorySection extends HTMLComponent {
       queryJson,
       getSettings().language
     );
-    return summary.newQuerySummary;
+    return summary.querySummary;
   }
 
   private getEntityLabel(entityURI: string): string {

@@ -44,7 +44,7 @@
   "dependencies": {
     "datatables.net": "^2.2.2",
     "datatables.net-bs4": "^2.2.2",
-    "sparnatural": "^11.0.1",
+    "sparnatural": "^11.0.3",
     "stream-browserify": "^3.0.0",
     "util": "^0.12.5"
   }

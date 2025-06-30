@@ -33,3 +33,6 @@
 
 // Résumé de la requête (date, nombre de résultats, etc.)
 @use "./history/_history-natural-resume.scss";
+
+// Conteneur principal pour la nouvelle requête
+@use "./history/_new-query-container.scss";

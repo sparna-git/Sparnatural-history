@@ -71,6 +71,27 @@
       <div class="row">
         <div class="col-md-7">
           <a href="#" id="switch-language">switch to en</a>
+          <div class="new-query-container">
+            <h1>Demande en langage naturel :</h1>
+            <textarea
+              id="naturalRequest"
+              rows="3"
+              placeholder="Ex : Donne-moi toutes les œuvres exposées en France"
+            ></textarea>
+
+            <label for="lang2">Langue :</label>
+            <input type="text" id="lang2" value="fr" />
+
+            <button onclick="sendNaturalRequest()">Envoyer</button>
+            <div id="spinner" style="display: none; margin-top: 10px">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+            </div>
+
+            <h2>Requête JSON générée :</h2>
+            <div id="naturalResult" class="result"></div>
+          </div>
           <div id="ui-search" style="width: auto">
             <spar-natural
               src="./configs/dbpediafr-config.ttl"
@@ -309,6 +330,60 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- YASGUI stuff -->
     <script src="https://cdn.jsdelivr.net/npm/@triply/yasgui/build/yasgui.min.js"></script>
+    <script>
+      async function sendNaturalRequest() {
+        const prompt = document.getElementById("naturalRequest").value.trim();
+        const lang = document.getElementById("lang2").value;
+        const spinner = document.getElementById("spinner");
+        const resultBox = document.getElementById("naturalResult");
+
+        const url = `http://localhost:3000/dbpedia-en/api/v1/text2query?prompt=${encodeURIComponent(
+          prompt
+        )}&lang=${lang}`;
+
+        // Affiche le spinner
+        spinner.style.display = "inline-block";
+        resultBox.textContent = "";
+
+        // Crée un contrôleur pour annuler après timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 80000); // 60 sec
+
+        try {
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
+
+          if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
+          const json = await res.json();
+
+          resultBox.textContent = JSON.stringify(json, null, 2);
+
+          // Injection dans Sparnatural
+          const sparnaturalEl = document.querySelector("spar-natural");
+          if (sparnaturalEl && typeof sparnaturalEl.loadQuery === "function") {
+            console.log(
+              "✅ Injection de la requête JSON dans Sparnatural...",
+              json
+            );
+            sparnaturalEl.loadQuery(json);
+            console.log("✅ Requête JSON injectée dans Sparnatural.");
+          } else {
+            console.warn(
+              "❌ spar-natural introuvable ou méthode non disponible."
+            );
+          }
+        } catch (err) {
+          if (err.name === "AbortError") {
+            resultBox.textContent = "⏱️ La requête a expiré après 60 secondes.";
+          } else {
+            resultBox.textContent = `❌ Erreur : ${err.message}`;
+          }
+          console.error("❌ Erreur lors de l'appel text2query :", err);
+        } finally {
+          spinner.style.display = "none";
+        }
+      }
+    </script>
 
     <!-- Webpack JS -->
     <%= js %>

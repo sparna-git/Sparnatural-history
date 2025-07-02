@@ -12,6 +12,8 @@ import LocalDataStorage from "./sparnatural-history/storage/LocalDataStorage";
 import "datatables.net-bs4/css/dataTables.bootstrap4.min.css";
 import { get } from "jquery";
 
+import { mergeSettingsServices } from "../src/services/components/settings/defaultSettings";
+
 export class SparnaturalHistoryElement extends HTMLElement {
   static HTML_ELEMENT_NAME = "sparnatural-history";
   static EVENT_INIT = "init";
@@ -37,16 +39,31 @@ export class SparnaturalHistoryElement extends HTMLElement {
 
   display() {
     console.log("Displaying SparnaturalHistoryComponent...");
+
+    const servicesElement = this.querySelector("services");
+    let mistralUrl = "";
+    if (servicesElement) {
+      mistralUrl = servicesElement.getAttribute("href") || "";
+    } else {
+      console.warn("⚠️ <services> introuvable dans <sparnatural-history>");
+    }
+
+    // Merge settings avec l’URL du Mistral API
+    this._attributes = new SparnaturalHistoryAttributes(this);
+    mergeSettingsServices({
+      ...this._attributes,
+      href: mistralUrl,
+    });
+
     this.sparnaturalHistory = new SparnaturalHistoryComponent();
     $(this).empty();
     $(this).append(this.sparnaturalHistory.html);
-    this._attributes = new SparnaturalHistoryAttributes(this);
-    mergeSettings(this._attributes);
+
     this.sparnaturalHistory.render();
   }
 
   static get observedAttributes() {
-    return ["lang", "urlAPI"];
+    return ["lang"];
   }
   attributeChangedCallback(
     name: string,
@@ -61,9 +78,6 @@ export class SparnaturalHistoryElement extends HTMLElement {
       switch (name) {
         case "lang":
           getSettings().language = newValue;
-          break;
-        case "urlAPI":
-          getSettings().urlAPI = newValue;
           break;
         default:
           throw new Error(`unknown observed attribute ${name}`);

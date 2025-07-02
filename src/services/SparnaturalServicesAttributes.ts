@@ -1,8 +1,10 @@
-export class SparnaturalHistoryAttributes {
-  language: string;
+// attributes for Sparnatural services
+
+export class SparnaturalServicesAttributes {
+  href: string;
 
   constructor(element: HTMLElement) {
-    this.language = this.#read(element, "lang");
+    this.href = this.#read(element, "href");
   }
 
   #read(element: HTMLElement, attribute: string, asJson: boolean = false) {

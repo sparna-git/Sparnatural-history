@@ -13,6 +13,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import { SparnaturalHistoryElement } from "../../SparnaturalHistoryElement";
 import { SparnaturalHistoryI18n } from "../settings/SparnaturalHistoryI18n";
 import { getSettings } from "../settings/defaultSettings";
+import { getSettingsServices } from "../../services/components/settings/defaultSettings";
 import DateFilterModal from "./DateFilter";
 import { SparnaturalQuerySummaryComponent } from "../../sparnatural-query-summary/SparnaturalQuerySummaryComponent";
 
@@ -107,7 +108,8 @@ class HistorySection extends HTMLComponent {
               month: "2-digit",
             });
         const dateISO = dateObj.toISOString();
-        const mistralApiUrl = getSettings().urlAPI;
+        const mistralApiUrl = getSettingsServices().href;
+        console.log("Mistral API URL:", mistralApiUrl);
         const generateSummaryButton = mistralApiUrl
           ? `<button class="generate-summary-btn" data-id="${entry.metadata.id}" title="Generate Summary">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -234,7 +236,7 @@ class HistorySection extends HTMLComponent {
             const generatedSummary = await generateSummaryFromAPI(
               queryWithoutMetadata,
               this.lang,
-              getSettings().urlAPI
+              getSettingsServices().href
             );
 
             console.log("Generated summary:", generatedSummary);
@@ -513,7 +515,7 @@ class HistorySection extends HTMLComponent {
 async function generateSummaryFromAPI(
   queryJson: any,
   lang: string = "fr",
-  mistralApiUrl: string = getSettings().urlAPI
+  mistralApiUrl: string = getSettingsServices().href
 ): Promise<string | null> {
   try {
     const response = await fetch(
@@ -522,9 +524,6 @@ async function generateSummaryFromAPI(
       )}&lang=${lang}`,
       {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
       }
     );
 

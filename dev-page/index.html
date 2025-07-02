@@ -83,6 +83,7 @@
             <input type="text" id="lang2" value="fr" />
 
             <button onclick="sendNaturalRequest()">Envoyer</button>
+
             <div id="spinner" style="display: none; margin-top: 10px">
               <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Chargement...</span>
@@ -92,6 +93,7 @@
             <h2>Requête JSON générée :</h2>
             <div id="naturalResult" class="result"></div>
           </div>
+
           <div id="ui-search" style="width: auto">
             <spar-natural
               src="./configs/dbpediafr-config.ttl"
@@ -105,10 +107,9 @@
             />
           </div>
           <div>
-            <sparnatural-history
-              lang="fr"
-              urlAPI="http://localhost:3000/dbpedia-en/"
-            />
+            <sparnatural-history lang="fr">
+              <services href="https://services.sparnatural.eu/dbpedia-en/" />
+            </sparnatural-history>
           </div>
           <!-- -->
           <div>
@@ -337,20 +338,20 @@
         const spinner = document.getElementById("spinner");
         const resultBox = document.getElementById("naturalResult");
 
-        const url = `http://localhost:3000/dbpedia-en/api/v1/text2query?prompt=${encodeURIComponent(
+        const url = `https://services.sparnatural.eu/dbpedia-en/api/v1/text2query?prompt=${encodeURIComponent(
           prompt
-        )}&lang=${lang}`;
+        )}&lang=${encodeURIComponent(lang)}`;
 
-        // Affiche le spinner
+        console.log("🔗 URL de la requête text2query :", url);
+
         spinner.style.display = "inline-block";
         resultBox.textContent = "";
 
-        // Crée un contrôleur pour annuler après timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 80000); // 60 sec
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
 
         try {
-          const res = await fetch(url, { signal: controller.signal });
+          const res = await fetch(url);
           clearTimeout(timeoutId);
 
           if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
@@ -358,7 +359,6 @@
 
           resultBox.textContent = JSON.stringify(json, null, 2);
 
-          // Injection dans Sparnatural
           const sparnaturalEl = document.querySelector("spar-natural");
           if (sparnaturalEl && typeof sparnaturalEl.loadQuery === "function") {
             console.log(

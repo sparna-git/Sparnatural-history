@@ -25,6 +25,7 @@ class HistorySection extends HTMLComponent {
 
   constructor(ParentComponent: HTMLComponent) {
     super("historySection", ParentComponent, null);
+    this.lang = getSettings().language;
     const historyElement = document.querySelector(
       "sparnatural-history"
     ) as SparnaturalHistoryElement;
@@ -249,12 +250,15 @@ class HistorySection extends HTMLComponent {
                   : String(generatedSummary);
               $button.siblings(".summary-natural").val(summaryText);
 
-              // Update the description object with the generated summary
-              if (!query.metadata.description) {
+              const lang = this.lang || getSettings().language;
+
+              if (
+                !query.metadata.description ||
+                typeof query.metadata.description !== "object"
+              ) {
                 query.metadata.description = {};
               }
-              query.metadata.description[this.lang] = summaryText;
-
+              query.metadata.description[lang] = summaryText;
               storage.set("queryHistory", history);
             }
           }
@@ -348,13 +352,22 @@ class HistorySection extends HTMLComponent {
             const query = history.find(
               (q: SparnaturalQueryIfc) => q.metadata.id === id
             );
+            // query without metadata and copy it to clipboard
             if (!query) return;
+            const { metadata, ...queryWithoutMetadata } = query;
+            const queryJson = JSON.stringify(queryWithoutMetadata, null, 2);
             navigator.clipboard
-              .writeText(JSON.stringify(query, null, 2))
-              .then(() =>
-                this.showToast(SparnaturalHistoryI18n.labels["MessageExport"])
-              )
-              .catch(() => this.showToast("Échec de la copie", 4000));
+              .writeText(queryJson)
+              .then(() => {
+                this.showToast(SparnaturalHistoryI18n.labels["MessageExport"]);
+              })
+              .catch((err) => {
+                console.error("Failed to copy query to clipboard:", err);
+                this.showToast(
+                  "échec de la copie dans le presse-papiers",
+                  5000
+                );
+              });
           });
       },
     });
@@ -514,12 +527,12 @@ class HistorySection extends HTMLComponent {
 
 async function generateSummaryFromAPI(
   queryJson: any,
-  lang: string = "fr",
+  lang: string,
   mistralApiUrl: string = getSettingsServices().href
 ): Promise<string | null> {
   try {
     const response = await fetch(
-      `${mistralApiUrl}api/v1/query2text?query=${encodeURIComponent(
+      `${mistralApiUrl}query2text?query=${encodeURIComponent(
         JSON.stringify(queryJson)
       )}&lang=${lang}`,
       {

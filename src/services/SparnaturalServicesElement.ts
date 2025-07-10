@@ -1,8 +1,9 @@
 import SparnaturalServicesComponent from "./components/SparnaturalServicesComponent";
 import { SparnaturalServicesAttributes } from "./SparnaturalServicesAttributes";
+import $ from "jquery";
 
 export class SparnaturalServicesElement extends HTMLElement {
-  static HTML_ELEMENT_NAME = "services";
+  static HTML_ELEMENT_NAME = "sparnatural-services";
 
   _attributes: SparnaturalServicesAttributes;
   sparnaturalServices: SparnaturalServicesComponent;
@@ -19,24 +20,12 @@ export class SparnaturalServicesElement extends HTMLElement {
 
   display() {
     console.log("Displaying SparnaturalServicesComponent...");
-    this.sparnaturalServices = new SparnaturalServicesComponent();
-    $(this).empty();
-    $(this).append(this.sparnaturalServices.html);
     this._attributes = new SparnaturalServicesAttributes(this);
 
-    // Tu peux ici faire un fetch ou autre avec this._attributes.href
-    if (this._attributes.href) {
-      console.log("Fetching services from:", this._attributes.href);
-      // Exemple :
-      fetch(this._attributes.href)
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("Received services data:", data);
-          // Intégrer dans le composant si nécessaire
-        })
-        .catch((err) => console.error("Error loading services:", err));
-    }
+    this.sparnaturalServices = new SparnaturalServicesComponent();
 
+    $(this).empty();
+    $(this).append(this.sparnaturalServices.html);
     this.sparnaturalServices.render();
   }
 
@@ -50,9 +39,7 @@ export class SparnaturalServicesElement extends HTMLElement {
     newValue: string | null
   ) {
     if (oldValue === newValue) return;
-    if (oldValue != null) {
-      this.display();
-    }
+    this.display();
   }
 }
 

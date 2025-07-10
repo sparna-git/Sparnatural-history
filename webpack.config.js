@@ -14,6 +14,7 @@ module.exports = {
       "./src/SparnaturalHistoryElement.ts",
       "./scss/sparnatural-history.scss",
     ],
+    "sparnatural-services": ["./src/services/SparnaturalServicesElement.ts"],
   },
   output: {
     path: path.resolve(__dirname, "./dist/browser"),

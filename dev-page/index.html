@@ -71,34 +71,11 @@
       <div class="row">
         <div class="col-md-7">
           <a href="#" id="switch-language">switch to en</a>
-          <div class="new-query-container">
-            <h1>Demande en langage naturel :</h1>
-            <textarea
-              id="naturalRequest"
-              rows="3"
-              placeholder="Ex : Donne-moi toutes les œuvres exposées en France"
-            ></textarea>
-
-            <label for="lang2">Langue :</label>
-            <input type="text" id="lang2" value="fr" />
-
-            <button onclick="sendNaturalRequest()">Envoyer</button>
-
-            <div id="spinner" style="display: none; margin-top: 10px">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Chargement...</span>
-              </div>
-            </div>
-
-            <h2>Requête JSON générée :</h2>
-            <div id="naturalResult" class="result"></div>
-          </div>
-
           <div id="ui-search" style="width: auto">
             <spar-natural
               src="./configs/dbpediafr-config.ttl"
-              lang="fr"
-              defaultLang="fr"
+              lang="en"
+              defaultLang="en"
               endpoint="https://proxy.sparnatural.eu/sparql-proxy/sparql?endpoint=http%3A%2F%2Ffr.dbpedia.org%2Fsparql"
               distinct="true"
               limit="100"
@@ -107,8 +84,10 @@
             />
           </div>
           <div>
-            <sparnatural-history lang="fr">
-              <services href="https://services.sparnatural.eu/dbpedia-en/" />
+            <sparnatural-history lang="en">
+              <sparnatural-services
+                href="https://services.sparnatural.eu/api/v1/dbpedia-en/"
+              ></sparnatural-services>
             </sparnatural-history>
           </div>
           <!-- -->
@@ -117,6 +96,7 @@
               Historique <i class="fas fa-history"></i>
             </button>
           </div>
+
           <!--<a id="myCustomButton" href="#">Click here to show history</a>-->
           <input type="hidden" id="query-json" />
           <div><a id="export" href="#">Export query in JSON</a></div>
@@ -331,59 +311,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- YASGUI stuff -->
     <script src="https://cdn.jsdelivr.net/npm/@triply/yasgui/build/yasgui.min.js"></script>
-    <script>
-      async function sendNaturalRequest() {
-        const prompt = document.getElementById("naturalRequest").value.trim();
-        const lang = document.getElementById("lang2").value;
-        const spinner = document.getElementById("spinner");
-        const resultBox = document.getElementById("naturalResult");
-
-        const url = `https://services.sparnatural.eu/dbpedia-en/api/v1/text2query?prompt=${encodeURIComponent(
-          prompt
-        )}&lang=${encodeURIComponent(lang)}`;
-
-        console.log("🔗 URL de la requête text2query :", url);
-
-        spinner.style.display = "inline-block";
-        resultBox.textContent = "";
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-        try {
-          const res = await fetch(url);
-          clearTimeout(timeoutId);
-
-          if (!res.ok) throw new Error(`Erreur HTTP ${res.status}`);
-          const json = await res.json();
-
-          resultBox.textContent = JSON.stringify(json, null, 2);
-
-          const sparnaturalEl = document.querySelector("spar-natural");
-          if (sparnaturalEl && typeof sparnaturalEl.loadQuery === "function") {
-            console.log(
-              "✅ Injection de la requête JSON dans Sparnatural...",
-              json
-            );
-            sparnaturalEl.loadQuery(json);
-            console.log("✅ Requête JSON injectée dans Sparnatural.");
-          } else {
-            console.warn(
-              "❌ spar-natural introuvable ou méthode non disponible."
-            );
-          }
-        } catch (err) {
-          if (err.name === "AbortError") {
-            resultBox.textContent = "⏱️ La requête a expiré après 60 secondes.";
-          } else {
-            resultBox.textContent = `❌ Erreur : ${err.message}`;
-          }
-          console.error("❌ Erreur lors de l'appel text2query :", err);
-        } finally {
-          spinner.style.display = "none";
-        }
-      }
-    </script>
 
     <!-- Webpack JS -->
     <%= js %>

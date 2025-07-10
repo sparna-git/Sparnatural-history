@@ -12,9 +12,7 @@ class SparnaturalServicesComponent extends HTMLComponent {
   render(): this {
     console.log("Rendering SparnaturalServicesComponent...");
 
-    // Tu peux ici ajouter du HTML via `this.html.append(...)`
     const container = document.createElement("div");
-    container.textContent = "Service Component Loaded.";
     this.html.append(container);
 
     return this;

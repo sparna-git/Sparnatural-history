@@ -13,6 +13,15 @@ Sparnatural query history component
 - **Copy, Load, Delete** actions for each saved query
 - **Internationalization** (English/French)
 
+
+## Screenshots
+
+[![](docs/screenshot-1.png)](https://github.com/sparna-git/Sparnatural-history/blob/main/docs/screenshot-1.png)
+
+Automated summary through the integration with [Sparnatural Platform](https://github.com/sparna-git/sparnatural-platform):
+
+[![](docs/screenshot-2.png)](https://github.com/sparna-git/Sparnatural-history/blob/main/docs/screenshot-2.png)
+
 ## Internal Components
 
 ### `SparnaturalHistoryComponent`

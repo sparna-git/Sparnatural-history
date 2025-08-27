@@ -1,5 +1,5 @@
 interface ISettings {
-  language: string;
+  href: string;
 }
 
 export default ISettings;

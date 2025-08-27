@@ -1,8 +1,6 @@
 import "../scss/sparnatural-history.scss";
 import SparnaturalHistoryComponent from "./sparnatural-history/component/SparnaturalHistoryComponent";
 import { SparnaturalQueryIfc } from "sparnatural";
-// import QueryLoader from "./sparnatural/querypreloading/QueryLoader";
-// import SparnaturalComponent from "./sparnatural/components/SparnaturalComponent";
 import { SparnaturalHistoryAttributes } from "./SparnaturalHistoryAttributes";
 import {
   getSettings,
@@ -10,7 +8,7 @@ import {
 } from "./sparnatural-history/settings/defaultSettings";
 import LocalDataStorage from "./sparnatural-history/storage/LocalDataStorage";
 import "datatables.net-bs4/css/dataTables.bootstrap4.min.css";
-import { get } from "jquery";
+import { mergeSettingsServices } from "../src/services/components/settings/defaultSettings";
 
 export class SparnaturalHistoryElement extends HTMLElement {
   static HTML_ELEMENT_NAME = "sparnatural-history";
@@ -23,7 +21,6 @@ export class SparnaturalHistoryElement extends HTMLElement {
   private lastQueryJson: SparnaturalQueryIfc = null;
 
   sparnaturalHistory: SparnaturalHistoryComponent;
-  // sparnatural: SparnaturalComponent;
 
   constructor() {
     super();
@@ -37,33 +34,51 @@ export class SparnaturalHistoryElement extends HTMLElement {
 
   display() {
     console.log("Displaying SparnaturalHistoryComponent...");
-    this.sparnaturalHistory = new SparnaturalHistoryComponent();
-    $(this).empty();
-    $(this).append(this.sparnaturalHistory.html);
+
+    const servicesElement = this.querySelector("sparnatural-services");
+    let mistralUrl = "";
+    if (servicesElement) {
+      mistralUrl = servicesElement.getAttribute("href") || "";
+    } else {
+      console.warn(
+        "⚠️ <sparnatural-services> introuvable dans <sparnatural-history>"
+      );
+    }
+
     this._attributes = new SparnaturalHistoryAttributes(this);
-    mergeSettings(this._attributes);
+    mergeSettings({ ...this._attributes });
+    mergeSettingsServices({ ...this._attributes, href: mistralUrl });
+
+    this.sparnaturalHistory = new SparnaturalHistoryComponent();
+
+    // Supprime tout sauf <sparnatural-services> (pour ne pas perdre le service)
+    [...this.children].forEach((child) => {
+      if (child.tagName.toLowerCase() !== "sparnatural-services") {
+        child.remove();
+      }
+    });
+
+    // Injecte le HTML du composant d'historique
+    this.appendChild(this.sparnaturalHistory.html.get(0));
+
     this.sparnaturalHistory.render();
   }
 
   static get observedAttributes() {
-    return ["lang", "urlAPI"];
+    return ["lang"];
   }
+
   attributeChangedCallback(
     name: string,
     oldValue: string | null,
     newValue: string | null
   ) {
-    if (oldValue === newValue) {
-      return;
-    }
+    if (oldValue === newValue) return;
 
     if (oldValue != null) {
       switch (name) {
         case "lang":
           getSettings().language = newValue;
-          break;
-        case "urlAPI":
-          getSettings().urlAPI = newValue;
           break;
         default:
           throw new Error(`unknown observed attribute ${name}`);
@@ -121,6 +136,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
     }
   }
 }
+
 customElements.get(SparnaturalHistoryElement.HTML_ELEMENT_NAME) ||
   window.customElements.define(
     SparnaturalHistoryElement.HTML_ELEMENT_NAME,

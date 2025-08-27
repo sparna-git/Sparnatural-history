@@ -74,8 +74,8 @@
           <div id="ui-search" style="width: auto">
             <spar-natural
               src="./configs/dbpediafr-config.ttl"
-              lang="fr"
-              defaultLang="fr"
+              lang="en"
+              defaultLang="en"
               endpoint="https://proxy.sparnatural.eu/sparql-proxy/sparql?endpoint=http%3A%2F%2Ffr.dbpedia.org%2Fsparql"
               distinct="true"
               limit="100"
@@ -84,10 +84,11 @@
             />
           </div>
           <div>
-            <sparnatural-history
-              lang="fr"
-              urlAPI="http://localhost:3000/dbpedia-en/"
-            />
+            <sparnatural-history lang="en">
+              <sparnatural-services
+                href="https://services.sparnatural.eu/api/v1/dbpedia-en/"
+              ></sparnatural-services>
+            </sparnatural-history>
           </div>
           <!-- -->
           <div>
@@ -95,6 +96,7 @@
               Historique <i class="fas fa-history"></i>
             </button>
           </div>
+
           <!--<a id="myCustomButton" href="#">Click here to show history</a>-->
           <input type="hidden" id="query-json" />
           <div><a id="export" href="#">Export query in JSON</a></div>

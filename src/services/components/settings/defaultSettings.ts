@@ -1,21 +1,19 @@
-import ISettings from "./ISettings";
+import ISettings from "../settings/ISettings";
 
 const defaultSettings: ISettings = {
-  language: "en",
-  // add url for for mistral api this attribute will be optional and used for redering the button of generate
-  // if this url don't exist hide the button generate
+  href: "",
 };
 
-// the actual settings, result of merge between defaultSettings and settings passed as parameters
 let settings: ISettings = {
-  language: "",
+  href: "",
 };
-export function getSettings() {
+
+export function getSettingsServices(): ISettings {
   return settings;
 }
 
 // merge given options with default setting values
-export function mergeSettings(options: ISettings) {
+export function mergeSettingsServices(options: ISettings) {
   // note how settings is used also as starting object so that properties
   // that were set are preserved if display is called again
   settings = extend(true, settings, defaultSettings, options) as ISettings;

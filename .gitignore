@@ -4,3 +4,5 @@ node_modules/
 stats.json
 
 dist/
+
+package-lock.json

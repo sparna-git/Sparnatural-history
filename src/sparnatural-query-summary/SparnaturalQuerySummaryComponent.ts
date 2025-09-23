@@ -111,20 +111,20 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
         }
         let selectedValues = "";
         let labelSelectedValues = "";
-        if (branch.line.values.length > 0) {
+        if (branch.line.criterias.length > 0) {
           let nbValue = 0;
-          branch.line.values.forEach((selectedValue: any) => {
+          branch.line.criterias.forEach((criteria: any) => {
             if (nbValue > 0) {
               selectedValues += ", ";
             }
-            selectedValues += `<span class="selectedValue">${selectedValue.label}</span>`;
+            selectedValues += `<span class="selectedValue">${criteria.label}</span>`;
             nbValue++;
           });
-          if (branch.line.values.length > 1) {
+          if (branch.line.criterias.length > 1) {
             labelSelectedValues = `${SparnaturalQuerySummaryI18n.labels.values} : `;
           }
         } else {
-          if (branch.children.length == 0) {
+          if (!branch.children || branch.children.length == 0) {
             selectedValues += `<span class="selectedValue">${SparnaturalQuerySummaryI18n.labels.any}</span>`;
           } else {
             //endLogic = ` <span class='logic Where'>${SparnaturalQuerySummaryI18n.labels.where}</span>`;
@@ -145,8 +145,10 @@ export class SparnaturalQuerySummaryComponent extends HTMLComponent {
         } else {
           htmlLI = `<li><div class="line">${startLogic} ${whereStartLabel} <span class="sumPredicat">${propLabel}</span> <strong class="sumObjet">${endLabel}${oSelceted}</strong>${selectedValues}${endLogic}</div>`;
         }
-        htmlLI +=
-          this.formatChildsItems(branch.children, variables, false) + "</li>";
+        if (branch.children && branch.children.length > 0) {
+          htmlLI +=
+            this.formatChildsItems(branch.children, variables, false) + "</li>";
+        }
         htmlUL += htmlLI;
       });
       htmlUL += `</ul>`;

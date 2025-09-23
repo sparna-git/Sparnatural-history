@@ -512,14 +512,21 @@ class HistorySection extends HTMLComponent {
 
   private getEntityType(queryJson: SparnaturalQueryIfc): string {
     if (!queryJson.variables?.length) return "Inconnu";
+
     const firstVar = this.getFirstVariableValue(queryJson.variables[0]);
-    const findMatch = (b: Branch) => b.line.s === firstVar;
+
+    const findMatch = (b?: Branch) => b?.line?.s === firstVar;
+
     const branch = queryJson.branches.find(findMatch);
-    const child = queryJson.branches.flatMap((b) => b.children).find(findMatch);
+
+    const child = queryJson.branches
+      .flatMap((b) => (Array.isArray(b.children) ? b.children : []))
+      .find(findMatch);
+
     return (
-      branch?.line.sType ||
-      child?.line.sType ||
-      queryJson.branches[0]?.line.sType ||
+      branch?.line?.sType ||
+      child?.line?.sType ||
+      queryJson.branches[0]?.line?.sType ||
       "Inconnu"
     );
   }

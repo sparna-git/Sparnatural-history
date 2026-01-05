@@ -7,7 +7,7 @@ class ConfirmationModal {
   constructor(private container: JQuery<HTMLElement>) {
     this.modalElement = $(`
       <div class="modal confirmation-modal">
-        <div class="modal-content">
+        <div class="modal-content-message">
           <p class="modal-message">${SparnaturalHistoryI18n.labels.confirmMessage}</p>
           <div class="modal-buttons">
             <button class="confirm-yes">${SparnaturalHistoryI18n.labels.yes}</button>

@@ -6,7 +6,7 @@ class DateFilterModal {
   constructor(private container: JQuery<HTMLElement>) {
     this.modalElement = $(`
       <div id="dateFilterModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content-message">
           <h3>${
             SparnaturalHistoryI18n.labels["dateFilterTitle"] ||
             "Filtrer par date"

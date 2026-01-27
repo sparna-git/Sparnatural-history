@@ -1,8 +1,8 @@
-import { SparnaturalQueryIfc } from "sparnatural";
+import { SparnaturalQuery } from "sparnatural";
 
 export interface QueryHistory {
   date: string;
   id: string;
   isFavorite: boolean;
-  queryJson: SparnaturalQueryIfc;
+  queryJson: SparnaturalQuery;
 }

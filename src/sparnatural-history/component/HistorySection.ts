@@ -2,20 +2,19 @@ import "datatables.net";
 import $ from "jquery";
 import LocalDataStorage from "../storage/LocalDataStorage";
 import { HTMLComponent } from "sparnatural";
-import {
-  Branch,
-  SparnaturalQueryIfc,
-  VariableTerm,
-  VariableExpression,
+import { SparnaturalQuery } from "sparnatural";
+import type {
+  ISparnaturalSpecification,
+  PatternBind,
+  TermVariable,
 } from "sparnatural";
-import type { ISparnaturalSpecification } from "sparnatural";
 import ConfirmationModal from "./ConfirmationModal";
 import { SparnaturalHistoryElement } from "../../SparnaturalHistoryElement";
 import { SparnaturalHistoryI18n } from "../settings/SparnaturalHistoryI18n";
 import { getSettings } from "../settings/defaultSettings";
 import { getSettingsServices } from "../../services/components/settings/defaultSettings";
 import DateFilterModal from "./DateFilter";
-import { SparnaturalQuerySummaryComponent } from "../../sparnatural-query-summary/SparnaturalQuerySummaryComponent";
+import { SparnaturalQuerySummaryComponentV13 } from "../../sparnatural-query-summary/SparnaturalQuerySummaryComponentV13";
 
 class HistorySection extends HTMLComponent {
   specProvider: ISparnaturalSpecification;
@@ -27,7 +26,7 @@ class HistorySection extends HTMLComponent {
     super("historySection", ParentComponent, null);
     this.lang = getSettings().language;
     const historyElement = document.querySelector(
-      "sparnatural-history"
+      "sparnatural-history",
     ) as SparnaturalHistoryElement;
     if (!historyElement) return;
   }
@@ -83,7 +82,7 @@ class HistorySection extends HTMLComponent {
     });
 
     const tableData = history
-      .map((entry: SparnaturalQueryIfc) => {
+      .map((entry: SparnaturalQuery) => {
         let parsedQuery;
         try {
           parsedQuery = typeof entry === "string" ? JSON.parse(entry) : entry;
@@ -218,7 +217,7 @@ class HistorySection extends HTMLComponent {
 
             // Ensure that we are looking for the correct property
             const query = history.find(
-              (q: SparnaturalQueryIfc) => q.metadata.id === id
+              (q: SparnaturalQuery) => q.metadata.id === id,
             );
 
             if (!query) {
@@ -237,7 +236,7 @@ class HistorySection extends HTMLComponent {
             const generatedSummary = await generateSummaryFromAPI(
               queryWithoutMetadata,
               this.lang,
-              getSettingsServices().href
+              getSettingsServices().href,
             );
 
             console.log("Generated summary:", generatedSummary);
@@ -261,7 +260,7 @@ class HistorySection extends HTMLComponent {
               query.metadata.description[lang] = summaryText;
               storage.set("queryHistory", history);
             }
-          }
+          },
         );
 
         $("#queryHistoryTable tbody").on(
@@ -282,7 +281,7 @@ class HistorySection extends HTMLComponent {
             const storage = LocalDataStorage.getInstance();
             const history = storage.getHistory();
             const query = history.find(
-              (q: SparnaturalQueryIfc) => q.metadata.id === id
+              (q: SparnaturalQuery) => q.metadata.id === id,
             );
             if (query) {
               if (!query.metadata.description) {
@@ -296,7 +295,7 @@ class HistorySection extends HTMLComponent {
               query.metadata.description[this.lang] = summaryText;
               storage.set("queryHistory", history);
             }
-          }
+          },
         );
 
         $("#queryHistoryTable tbody").on(
@@ -308,7 +307,7 @@ class HistorySection extends HTMLComponent {
             const isEmpty = $textarea.val().toString().trim() === "";
             $button.prop("disabled", !isEmpty);
             $button.toggleClass("disabled", !isEmpty);
-          }
+          },
         );
 
         $("#queryHistoryTable tbody")
@@ -327,7 +326,7 @@ class HistorySection extends HTMLComponent {
           .on("click", async (e) => {
             const id = $(e.currentTarget).data("id");
             const confirmed = await this.confirmAction(
-              SparnaturalHistoryI18n.labels["confirmDelRequest"]
+              SparnaturalHistoryI18n.labels["confirmDelRequest"],
             );
             if (confirmed) {
               storage.deleteQuery(id);
@@ -350,7 +349,7 @@ class HistorySection extends HTMLComponent {
           .on("click", (e) => {
             const id = $(e.currentTarget).data("id");
             const query = history.find(
-              (q: SparnaturalQueryIfc) => q.metadata.id === id
+              (q: SparnaturalQuery) => q.metadata.id === id,
             );
             // query without metadata and copy it to clipboard
             if (!query) return;
@@ -365,7 +364,7 @@ class HistorySection extends HTMLComponent {
                 console.error("Failed to copy query to clipboard:", err);
                 this.showToast(
                   "échec de la copie dans le presse-papiers",
-                  5000
+                  5000,
                 );
               });
           });
@@ -389,7 +388,7 @@ class HistorySection extends HTMLComponent {
       .on("click", () => this.dateFilterModal.open());
     this.html.find("#resetHistory").on("click", async () => {
       const confirmed = await this.confirmAction(
-        SparnaturalHistoryI18n.labels["confirmClearHistory"]
+        SparnaturalHistoryI18n.labels["confirmClearHistory"],
       );
       if (confirmed) this.clearHistory();
     });
@@ -408,7 +407,7 @@ class HistorySection extends HTMLComponent {
 
   private showToast(message: string, duration = 3000) {
     const toast = $(
-      `<div class="custom-toast"><span class="toast-message">${message}</span></div>`
+      `<div class="custom-toast"><span class="toast-message">${message}</span></div>`,
     );
     this.html.append(toast);
     toast.fadeIn(200);
@@ -420,11 +419,11 @@ class HistorySection extends HTMLComponent {
     const storage = LocalDataStorage.getInstance();
     const query = storage
       .getHistory()
-      .find((q: SparnaturalQueryIfc) => q.metadata.id === id);
+      .find((q: SparnaturalQuery) => q.metadata.id === id);
     if (!query) return;
 
     const historyElement = document.querySelector(
-      "sparnatural-history"
+      "sparnatural-history",
     ) as SparnaturalHistoryElement;
     if (historyElement) {
       historyElement.triggerLoadQueryEvent(query);
@@ -437,9 +436,7 @@ class HistorySection extends HTMLComponent {
     const id = $(event.currentTarget).data("id");
     const storage = LocalDataStorage.getInstance();
     const history = storage.getHistory();
-    const query = history.find(
-      (q: SparnaturalQueryIfc) => q.metadata.id === id
-    );
+    const query = history.find((q: SparnaturalQuery) => q.metadata.id === id);
     if (!query) return;
 
     query.metadata.isFavorite = !query.metadata.isFavorite;
@@ -453,9 +450,7 @@ class HistorySection extends HTMLComponent {
 
     $(".favorite-query").each(function () {
       const id = $(this).data("id");
-      const query = history.find(
-        (q: SparnaturalQueryIfc) => q.metadata.id === id
-      );
+      const query = history.find((q: SparnaturalQuery) => q.metadata.id === id);
       const icon = $(this).find("i");
       icon
         .removeClass("fas fa-star far fa-star")
@@ -478,13 +473,13 @@ class HistorySection extends HTMLComponent {
     uri ? uri.substring(uri.lastIndexOf("/") + 1) : "Inconnu";
 
   private formatQuerySummary(
-    queryJson: SparnaturalQueryIfc,
-    specProvider?: ISparnaturalSpecification
+    queryJson: SparnaturalQuery,
+    specProvider?: ISparnaturalSpecification,
   ): string {
-    const summary = new SparnaturalQuerySummaryComponent(
+    const summary = new SparnaturalQuerySummaryComponentV13(
       specProvider,
       queryJson,
-      getSettings().language
+      getSettings().language,
     );
     return summary.querySummary;
   }
@@ -502,49 +497,44 @@ class HistorySection extends HTMLComponent {
   }
 
   private getFirstVariableValue(
-    variable: VariableTerm | VariableExpression
+    variable: TermVariable | PatternBind,
   ): string | null {
-    if ("value" in variable) return variable.value;
-    if ("expression" in variable && "value" in variable.expression.expression)
-      return variable.expression.expression.value;
+    if (variable.subType === "variable") {
+      return variable.value;
+    }
+
+    if (
+      variable.subType === "bind" &&
+      variable.expression?.expression?.[0]?.subType === "variable"
+    ) {
+      return variable.expression.expression[0].value;
+    }
+
     return null;
   }
 
-  private getEntityType(queryJson: SparnaturalQueryIfc): string {
-    if (!queryJson.variables?.length) return "Inconnu";
+  private getEntityType(queryJson: SparnaturalQuery): string {
+    // Sécurité minimale
+    if (!queryJson?.where?.subject) return "Inconnu";
 
-    const firstVar = this.getFirstVariableValue(queryJson.variables[0]);
-
-    const findMatch = (b?: Branch) => b?.line?.s === firstVar;
-
-    const branch = queryJson.branches.find(findMatch);
-
-    const child = queryJson.branches
-      .flatMap((b) => (Array.isArray(b.children) ? b.children : []))
-      .find(findMatch);
-
-    return (
-      branch?.line?.sType ||
-      child?.line?.sType ||
-      queryJson.branches[0]?.line?.sType ||
-      "Inconnu"
-    );
+    // Le type racine est directement porté par le sujet
+    return queryJson.where.subject.rdfType ?? "Inconnu";
   }
 }
 
 async function generateSummaryFromAPI(
   queryJson: any,
   lang: string,
-  mistralApiUrl: string = getSettingsServices().href
+  mistralApiUrl: string = getSettingsServices().href,
 ): Promise<string | null> {
   try {
     const response = await fetch(
       `${mistralApiUrl}query2text?query=${encodeURIComponent(
-        JSON.stringify(queryJson)
+        JSON.stringify(queryJson),
       )}&lang=${lang}`,
       {
         method: "GET",
-      }
+      },
     );
 
     if (!response.ok) {

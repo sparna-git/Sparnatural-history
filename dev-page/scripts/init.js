@@ -33,10 +33,7 @@ const yasr = new Yasr(document.getElementById("yasr"), {
   persistency: { prefix: false, results: { key: false } },
 });
 
-
-
 sparnatural.addEventListener("init", (event) => {
-
   // Inject sparnatural configuration in history
   sparnaturalHistory.notifyConfiguration(event.detail.config);
 
@@ -44,9 +41,7 @@ sparnatural.addEventListener("init", (event) => {
   for (const plugin in yasr.plugins) {
     if (yasr.plugins[plugin].notifyConfiguration) {
       console.log("notifying configuration for plugin " + plugin);
-      yasr.plugins[plugin].notifyConfiguration(
-        event.detail.config
-      );
+      yasr.plugins[plugin].notifyConfiguration(event.detail.config);
     }
   }
 });
@@ -64,43 +59,20 @@ sparnatural.addEventListener("queryUpdated", (event) => {
 
   // store JSON in hidden field
   document.getElementById("query-json").value = JSON.stringify(
-    event.detail.queryStringFromJson
+    event.detail.queryJson,
   );
 
   // notify the query to yasr plugins
   for (const plugin in yasr.plugins) {
     if (yasr.plugins[plugin].notifyQuery) {
-      yasr.plugins[plugin].notifyQuery(event.detail.queryStringFromJson);
+      yasr.plugins[plugin].notifyQuery(event.detail.queryJson);
     }
   }
 });
 
 sparnatural.addEventListener("queryUpdated", (event) => {
-  var queryString = sparnatural.expandSparql(event.detail.queryString);
-  var queryStringFromJson = sparnatural.expandSparql(
-    event.detail.queryStringFromJson
-  );
-  // Ajouter une ligne au tableau
-  const tableBody = document.getElementById("sparql-comparison-table");
-  const row = document.createElement("tr");
-  const oldCell = document.createElement("td");
-  oldCell.textContent = queryString;
-  row.appendChild(oldCell);
-  const newCell = document.createElement("td");
-  newCell.textContent = queryStringFromJson;
-  row.appendChild(newCell);
-  const statusCell = document.createElement("td");
-  statusCell.textContent =
-    queryString === queryStringFromJson ? "OK" : "Pas OK";
-  statusCell.classList.add(
-    queryString === queryStringFromJson ? "table-success" : "table-danger"
-  );
-  row.appendChild(statusCell);
-  tableBody.appendChild(row);
-  // Mettre à jour le champ caché
-
   document.getElementById("query-json").value = JSON.stringify(
-    event.detail.queryJson
+    event.detail.queryJson,
   );
 
   // Notifier les plugins Yasr
@@ -143,7 +115,7 @@ document.getElementById("export").onclick = function () {
   var jsonString = JSON.stringify(
     JSON.parse(document.getElementById("query-json").value),
     null,
-    2
+    2,
   );
   $("#export-json").val(jsonString);
   $("#exportModal").modal("show");

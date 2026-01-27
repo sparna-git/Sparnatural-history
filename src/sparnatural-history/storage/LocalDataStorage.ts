@@ -1,4 +1,4 @@
-import { SparnaturalQueryIfc } from "sparnatural";
+import { SparnaturalQuery } from "sparnatural";
 
 class LocalDataStorage {
   private static instance: any;
@@ -13,6 +13,11 @@ class LocalDataStorage {
     } else {
       return this.privateArray[name] || null;
     }
+  }
+
+  private getHistoryKey(): string {
+    const path = window.location.pathname;
+    return `queryHistory::${path}`;
   }
 
   set(name: any, value: any) {
@@ -30,7 +35,7 @@ class LocalDataStorage {
     return LocalDataStorage.instance;
   }
 
-  saveQuery(queryJson: SparnaturalQueryIfc, lang: string = "fr"): void {
+  saveQuery(queryJson: SparnaturalQuery, lang: string = "fr"): void {
     if (!queryJson) {
       console.error("Impossible de sauvegarder une requête vide !");
       return;
@@ -57,7 +62,7 @@ class LocalDataStorage {
     const { metadata, ...queryWithoutMetadata } = queryJson;
 
     // Vérifie si la requête existe déjà (sans les métadonnées)
-    const existingQuery = history.find((q: SparnaturalQueryIfc) => {
+    const existingQuery = history.find((q: SparnaturalQuery) => {
       const { metadata: existingMetadata, ...existingQueryWithoutMetadata } = q;
       return (
         JSON.stringify(existingQueryWithoutMetadata) ===
@@ -71,9 +76,9 @@ class LocalDataStorage {
 
     // Trie par date (plus récente en haut)
     history.sort(
-      (a: SparnaturalQueryIfc, b: SparnaturalQueryIfc) =>
+      (a: SparnaturalQuery, b: SparnaturalQuery) =>
         new Date(b.metadata.date).getTime() -
-        new Date(a.metadata.date).getTime()
+        new Date(a.metadata.date).getTime(),
     );
 
     // Si on dépasse 200, on supprime les plus anciennes non-favorites
@@ -91,27 +96,26 @@ class LocalDataStorage {
       }
     }
 
-    this.set("queryHistory", history);
+    this.set(this.getHistoryKey(), history);
     console.log("Après ajout :", this.getHistory());
   }
 
-  getHistory(): SparnaturalQueryIfc[] {
-    let history = localStorage.getItem("queryHistory");
-    return history ? JSON.parse(history) : [];
+  getHistory(): SparnaturalQuery[] {
+    return this.get(this.getHistoryKey()) ?? [];
   }
 
   deleteQuery(id: string): void {
-    let history = this.getHistory().filter(
-      (entry: SparnaturalQueryIfc) => entry.metadata.id !== id
+    const history = this.getHistory().filter(
+      (entry) => entry.metadata.id !== id,
     );
-    this.set("queryHistory", history);
+    this.set(this.getHistoryKey(), history);
   }
 
   clearHistory(): void {
-    let history = this.getHistory().filter(
-      (entry: SparnaturalQueryIfc) => entry.metadata.isFavorite
+    const history = this.getHistory().filter(
+      (entry) => entry.metadata.isFavorite,
     );
-    this.set("queryHistory", history);
+    this.set(this.getHistoryKey(), history);
   }
 
   private storageAvailable(): boolean {

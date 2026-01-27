@@ -1,6 +1,6 @@
 import "../scss/sparnatural-history.scss";
 import SparnaturalHistoryComponent from "./sparnatural-history/component/SparnaturalHistoryComponent";
-import { SparnaturalQueryIfc } from "sparnatural";
+import { SparnaturalQuery } from "sparnatural";
 import { SparnaturalHistoryAttributes } from "./SparnaturalHistoryAttributes";
 import {
   getSettings,
@@ -18,7 +18,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
   // just to avoid name clash with "attributes"
   _attributes: SparnaturalHistoryAttributes;
 
-  private lastQueryJson: SparnaturalQueryIfc = null;
+  private lastQueryJson: SparnaturalQuery = null;
 
   sparnaturalHistory: SparnaturalHistoryComponent;
 
@@ -41,7 +41,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
       mistralUrl = servicesElement.getAttribute("href") || "";
     } else {
       console.warn(
-        "⚠️ <sparnatural-services> introuvable dans <sparnatural-history>"
+        "⚠️ <sparnatural-services> introuvable dans <sparnatural-history>",
       );
     }
 
@@ -71,7 +71,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
   attributeChangedCallback(
     name: string,
     oldValue: string | null,
-    newValue: string | null
+    newValue: string | null,
   ) {
     if (oldValue === newValue) return;
 
@@ -92,18 +92,18 @@ export class SparnaturalHistoryElement extends HTMLElement {
     this.sparnaturalHistory.setSpecProvider(config);
   }
 
-  triggerLoadQueryEvent(query: SparnaturalQueryIfc) {
+  triggerLoadQueryEvent(query: SparnaturalQuery) {
     // Dispatch LOAD_QUERY event
     this.dispatchEvent(
       new CustomEvent(SparnaturalHistoryElement.EVENT_LOAD_QUERY, {
         bubbles: true,
         detail: { query: query },
-      })
+      }),
     );
   }
 
   // Méthode pour sauvegarder la requête dans le local storage
-  saveQuery(queryJson: SparnaturalQueryIfc): void {
+  saveQuery(queryJson: SparnaturalQuery): void {
     if (!queryJson) {
       console.error("Impossible de sauvegarder une requête vide !");
       return;
@@ -115,8 +115,8 @@ export class SparnaturalHistoryElement extends HTMLElement {
     const alreadyExists = storage
       .getHistory()
       .some(
-        (q: SparnaturalQueryIfc) =>
-          JSON.stringify(q) === JSON.stringify(queryJson)
+        (q: SparnaturalQuery) =>
+          JSON.stringify(q) === JSON.stringify(queryJson),
       );
 
     if (!alreadyExists) {
@@ -140,7 +140,7 @@ export class SparnaturalHistoryElement extends HTMLElement {
 customElements.get(SparnaturalHistoryElement.HTML_ELEMENT_NAME) ||
   window.customElements.define(
     SparnaturalHistoryElement.HTML_ELEMENT_NAME,
-    SparnaturalHistoryElement
+    SparnaturalHistoryElement,
   );
 
 /*

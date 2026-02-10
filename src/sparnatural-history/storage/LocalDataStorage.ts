@@ -104,6 +104,10 @@ class LocalDataStorage {
     return this.get(this.getHistoryKey()) ?? [];
   }
 
+  saveHistory(history: SparnaturalQuery[]): void {
+    this.set(this.getHistoryKey(), history);
+  }
+
   deleteQuery(id: string): void {
     const history = this.getHistory().filter(
       (entry) => entry.metadata.id !== id,

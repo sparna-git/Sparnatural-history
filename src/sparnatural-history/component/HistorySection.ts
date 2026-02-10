@@ -258,7 +258,7 @@ class HistorySection extends HTMLComponent {
                 query.metadata.description = {};
               }
               query.metadata.description[lang] = summaryText;
-              storage.set("queryHistory", history);
+              storage.saveHistory(history);
             }
           },
         );
@@ -293,7 +293,7 @@ class HistorySection extends HTMLComponent {
                   ? JSON.stringify(newSummary)
                   : String(newSummary);
               query.metadata.description[this.lang] = summaryText;
-              storage.set("queryHistory", history);
+              storage.saveHistory(history);
             }
           },
         );
@@ -440,7 +440,7 @@ class HistorySection extends HTMLComponent {
     if (!query) return;
 
     query.metadata.isFavorite = !query.metadata.isFavorite;
-    storage.set("queryHistory", history);
+    storage.saveHistory(history);
     this.initializeFavorites();
   }
 

@@ -15,6 +15,11 @@ class LocalDataStorage {
     }
   }
 
+  private getHistoryKey(): string {
+    const path = window.location.pathname;
+    return `queryHistory::${path}`;
+  }
+
   set(name: any, value: any) {
     if (this.storageAvailable()) {
       localStorage.setItem(name, JSON.stringify(value));
@@ -73,7 +78,7 @@ class LocalDataStorage {
     history.sort(
       (a: SparnaturalQueryIfc, b: SparnaturalQueryIfc) =>
         new Date(b.metadata.date).getTime() -
-        new Date(a.metadata.date).getTime()
+        new Date(a.metadata.date).getTime(),
     );
 
     // Si on dépasse 200, on supprime les plus anciennes non-favorites
@@ -91,27 +96,30 @@ class LocalDataStorage {
       }
     }
 
-    this.set("queryHistory", history);
+    this.set(this.getHistoryKey(), history);
     console.log("Après ajout :", this.getHistory());
   }
 
   getHistory(): SparnaturalQueryIfc[] {
-    let history = localStorage.getItem("queryHistory");
-    return history ? JSON.parse(history) : [];
+    return this.get(this.getHistoryKey()) ?? [];
+  }
+
+  saveHistory(history: SparnaturalQueryIfc[]): void {
+    this.set(this.getHistoryKey(), history);
   }
 
   deleteQuery(id: string): void {
-    let history = this.getHistory().filter(
-      (entry: SparnaturalQueryIfc) => entry.metadata.id !== id
+    const history = this.getHistory().filter(
+      (entry) => entry.metadata.id !== id,
     );
-    this.set("queryHistory", history);
+    this.set(this.getHistoryKey(), history);
   }
 
   clearHistory(): void {
-    let history = this.getHistory().filter(
-      (entry: SparnaturalQueryIfc) => entry.metadata.isFavorite
+    const history = this.getHistory().filter(
+      (entry) => entry.metadata.isFavorite,
     );
-    this.set("queryHistory", history);
+    this.set(this.getHistoryKey(), history);
   }
 
   private storageAvailable(): boolean {

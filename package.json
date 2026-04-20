@@ -4,6 +4,7 @@
   "description": "A query history component for Sparnatural",
   "main": "dist/sparnatural-history.js",
   "scripts": {
+    "clean": "rm -rf dist",
     "build": "webpack --config webpack.config.js --mode production",
     "start": "webpack serve --hot --config webpack.config.js --mode development"
   },
@@ -45,7 +46,7 @@
   "dependencies": {
     "datatables.net": "^2.2.2",
     "datatables.net-bs4": "^2.2.2",
-    "sparnatural": "file:../Sparnatural/sparnatural-12.0.0.tgz",
+    "sparnatural": "file:../sparnatural/sparnatural-12.2.1.tgz",
     "stream-browserify": "^3.0.0",
     "util": "^0.12.5"
   }
